@@ -1,3 +1,6 @@
+*~
+.#*
+*/#*#
 log/*
 tmp/cache/*
 tmp/sessions/*
