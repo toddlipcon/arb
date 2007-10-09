@@ -3,6 +3,6 @@ class CommitController < ApplicationController
     @commit = Commit.new(:sha1 => params[:sha1])
 
     @headers["Content-Type"] = 'text/plain'
-    render :text => @commit.diff_tree
+    render :text => @commit.diff.inspect
   end
 end

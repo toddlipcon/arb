@@ -4,7 +4,7 @@ class Commit < ActiveRecord::Base
   validates_length_of :sha1, :is => 40
 
   def repository_dir
-    "/files/git/repos/review/web"
+    "/files/git/repos/main/web"
   end
 
   def diff_tree
@@ -13,8 +13,12 @@ class Commit < ActiveRecord::Base
     end
 
     Dir.chdir(self.repository_dir) do
-      return `git-diff-tree --cc #{self.sha1}`
+      return `git-diff-tree --no-commit-id --cc #{self.sha1}`
     end
+  end
+
+  def diff
+    GitDiffParser.new.parse(self.diff_tree)
   end
 
 end
