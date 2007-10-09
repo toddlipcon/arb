@@ -15,10 +15,10 @@ class Diff
   end
 
   class Chunk
-    attr_accessor :src, :dst, :lines
+    attr_accessor :src_files, :dst_file, :lines
     def initialize(src, dst, lines)
-      @src = src
-      @dst = dst
+      @src_files = src
+      @dst_file = dst
       @lines = lines
     end
   end

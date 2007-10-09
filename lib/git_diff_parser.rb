@@ -138,8 +138,12 @@ Reads:
       else
         @parser.back_line
 
+        if @dst_files.length != 1
+          parser.except("Wrong number of destination files -- need exactly 1")
+        end
+
         data[:src_files] = @src_files
-        data[:dst_files] = @dst_files
+        data[:dst_file] = @dst_files[0]
         return ChunkStartState.new(parser, data)
       end
     end
@@ -240,7 +244,7 @@ Reads lines of the type:
       end
 
 
-      chunk = Diff::Chunk.new(@data[:src_files], @data[:dst_files], @lines)
+      chunk = Diff::Chunk.new(@data[:src_files], @data[:dst_file], @lines)
 
       @data[:chunks] = [] if @data[:chunks].nil?
       @data[:chunks] << chunk

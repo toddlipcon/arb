@@ -31,6 +31,12 @@ class GitDiffParserTest < Test::Unit::TestCase
     diff = do_test_diff('simple.diff')
     assert !diff.nil?
 
-    assert_equal(diff.chunks.length, 1)
+    assert_equal(1, diff.chunks.length)
+
+    chunk = diff.chunks[0]
+    assert_not_nil(chunk)
+
+    assert_equal(["a/AsqlShard.java"], chunk.src_files)
+    assert_equal("b/AsqlShard.java", chunk.dst_file)
   end
 end
