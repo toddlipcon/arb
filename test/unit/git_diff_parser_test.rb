@@ -53,4 +53,42 @@ class GitDiffParserTest < Test::Unit::TestCase
 
     assert_equal(expected_lines, lines.map { |l| l.line_numbers })
   end
+
+  def test_multi_file
+    diff = do_test_diff('multi_file.diff')
+    assert !diff.nil?
+
+    assert_equal(3, diff.chunks.length)
+
+    assert_equal("b/AsqlShard.java", diff.chunks[0].dst_file)
+    assert_equal("b/initial", diff.chunks[1].dst_file)
+    assert_equal("b/newfile", diff.chunks[2].dst_file)
+
+    # Test chunk 2 (idx 1) -- subtracts lines at end of chunk
+
+    chunk = diff.chunks[1]
+
+    assert_equal(5, chunk.lines.length)
+
+    expected_lines = [
+      [1, 1],
+      [2, 2],
+      [3, 3],
+      [4, nil],
+      [5, nil]];
+    assert_equal(expected_lines, chunk.lines.map { |l| l.line_numbers })
+
+    # Test chunk 3 (idx 2) -- adds lines at end of chunk
+
+    chunk = diff.chunks[2]
+    assert_equal(4, chunk.lines.length)
+    expected_lines = [
+      [1, 1],
+      [2, 2],
+      [nil, 3],
+      [nil, 4]];
+    assert_equal(expected_lines, chunk.lines.map { |l| l.line_numbers })
+
+
+  end
 end
