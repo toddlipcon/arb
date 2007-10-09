@@ -11,10 +11,12 @@ class GitDiffParser
 
     @state = DiffLineState.new(self)
 
-    while (! @state.nil?) do
+    while (! @state.nil? and ! @state.done?) do
       debug "Parsing -- on line #{@current_line_number}"
       @state = @state.parse_line
     end
+
+    @state.diff
   end
 
   def get_next_line
@@ -54,6 +56,10 @@ class GitDiffParser
 
     def parse_line
       return nil
+    end
+
+    def done?
+      return false
     end
   end
 
@@ -236,7 +242,16 @@ Reads lines of the type:
 
       chunk = Diff::Chunk.new(@data[:src_files], @data[:dst_files], @lines)
 
-      return nil unless parser.more_lines?
+      @data[:chunks] = [] if @data[:chunks].nil?
+      @data[:chunks] << chunk
+
+
+      if ! parser.more_lines?
+        # End of diff file
+
+        return ParseCompleteState.new(Diff.new(@data[:chunks]))
+      end
+
       peek = parser.peek_next_line
       
       if peek =~ /^\@\@/
@@ -247,5 +262,16 @@ Reads lines of the type:
 
     end
   end # ChunkDataState
+
+  class ParseCompleteState < State
+    attr_accessor :diff;
+    def initialize(diff)
+      @diff = diff
+    end
+
+    def done?
+      return true
+    end
+  end
 
 end

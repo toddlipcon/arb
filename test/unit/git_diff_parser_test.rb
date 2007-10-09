@@ -26,4 +26,11 @@ class GitDiffParserTest < Test::Unit::TestCase
       assert !diff.nil?
     end
   end
+
+  def test_simple
+    diff = do_test_diff('simple.diff')
+    assert !diff.nil?
+
+    assert_equal(diff.chunks.length, 1)
+  end
 end
