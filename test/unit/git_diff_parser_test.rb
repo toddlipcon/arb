@@ -38,5 +38,19 @@ class GitDiffParserTest < Test::Unit::TestCase
 
     assert_equal(["a/AsqlShard.java"], chunk.src_files)
     assert_equal("b/AsqlShard.java", chunk.dst_file)
+
+    lines = chunk.lines
+    assert_equal(7, lines.length)
+
+    expected_lines = [
+      [1, 1],
+      [2, 2],
+      [nil, 3],
+      [nil, 4],
+      [nil, 5],
+      [nil, 6],
+      [3, 7]];
+
+    assert_equal(expected_lines, lines.map { |l| l.line_numbers })
   end
 end
