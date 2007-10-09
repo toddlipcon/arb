@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../test_helper'
 
 class GitDiffParserTest < Test::Unit::TestCase
 
-  TestDiffs = ['simple.diff']
+  TestDiffs = ['simple.diff', 'multi_file.diff']
 
   def setup
     @done_diffs = Hash.new

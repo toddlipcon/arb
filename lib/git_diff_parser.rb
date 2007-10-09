@@ -210,29 +210,40 @@ Reads lines of the type:
       from_lines = @chunk_data[:from_file_ranges].map {|r| r.first}
       to_line = @chunk_data[:to_file_range].first
 
-      while to_line <= @chunk_data[:to_file_range].last
+      all_ranges = @chunk_data[:from_file_ranges].push(@chunk_data[:to_file_range])
+
+      done_lines = Array.new(all_ranges.length, nil)
+      max_lines = all_ranges.map { |r| r.last }
+
+      while done_lines != max_lines
         line = @parser.get_next_line
 
         parser.debug("Parsing line: #{line}")
 
+        # Get the '+', ' ', and '-' flags from the beginning of the line
+        # There is one for each "input" file
         diff_status = line[0.. from_lines.length - 1].split("")
-        #          parser.debug("Diff_status: #{diff_status.inspect}")
 
         #TODO(todd) add more checking on lengths
 
         line_numbers = []
 
         diff_status.each_index do |i|
-          if diff_status[i] == " "
+          if diff_status[i] != '+'
             line_numbers << from_lines[i]
+            done_lines[i] = from_lines[i]
+
             from_lines[i] += 1
           else
             line_numbers << nil
           end
         end
 
+        # Take care of the line number for the "destination" file
         if diff_status.select { |x| x == "-" }.empty?
           line_numbers << to_line
+          done_lines[-1] = to_line
+
           to_line += 1
         else
           line_numbers << nil
