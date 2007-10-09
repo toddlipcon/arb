@@ -12,7 +12,9 @@ class Diff
 
 
   class Chunk
-    def initialize(lines)
+    def initialize(src, dst, lines)
+      @src = src
+      @dst = dst
       @lines = lines
     end
   end

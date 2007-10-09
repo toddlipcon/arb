@@ -189,63 +189,63 @@ Reads lines of the type:
 
 =end
 
-    class ChunkDataState < State
-      def initialize(parser, data, chunk_data)
-        super(parser, data)
-        @chunk_data = chunk_data
-        @lines = []
-      end
+  class ChunkDataState < State
+    def initialize(parser, data, chunk_data)
+      super(parser, data)
+      @chunk_data = chunk_data
+      @lines = []
+    end
 
-      def parse_line
-        from_lines = @chunk_data[:from_file_ranges].map {|r| r.first}
-        to_line = @chunk_data[:to_file_range].first
+    def parse_line
+      from_lines = @chunk_data[:from_file_ranges].map {|r| r.first}
+      to_line = @chunk_data[:to_file_range].first
 
-        while to_line <= @chunk_data[:to_file_range].last
-          line = @parser.get_next_line
+      while to_line <= @chunk_data[:to_file_range].last
+        line = @parser.get_next_line
 
-          parser.debug("Parsing line: #{line}")
+        parser.debug("Parsing line: #{line}")
 
-          diff_status = line[0.. from_lines.length - 1].split("")
-          #          parser.debug("Diff_status: #{diff_status.inspect}")
+        diff_status = line[0.. from_lines.length - 1].split("")
+        #          parser.debug("Diff_status: #{diff_status.inspect}")
 
-          #TODO(todd) add more checking on lengths
+        #TODO(todd) add more checking on lengths
 
-          line_numbers = []
+        line_numbers = []
 
-          diff_status.each_index do |i|
-            if diff_status[i] == " "
-              line_numbers << from_lines[i]
-              from_lines[i] += 1
-            else
-              line_numbers << nil
-            end
-          end
-
-          if diff_status.select { |x| x == "-" }.empty?
-            line_numbers << to_line
-            to_line += 1
+        diff_status.each_index do |i|
+          if diff_status[i] == " "
+            line_numbers << from_lines[i]
+            from_lines[i] += 1
           else
             line_numbers << nil
           end
-
-          @lines << Diff::DiffLine.new(line_numbers, line[from_lines.length - 1 .. line.length])
-
-          parser.debug("line numbers: " + line_numbers.map { |x| x.inspect }.join("|"));
         end
 
-
-        chunk = Diff::Chunk.new(@lines)
-
-        return nil unless parser.more_lines?
-        peek = parser.peek_next_line
-        
-        if peek =~ /^\@\@/
-          return ChunkStartState.new(parser, data)
+        if diff_status.select { |x| x == "-" }.empty?
+          line_numbers << to_line
+          to_line += 1
         else
-          return DiffLineState.new(parser, data)
+          line_numbers << nil
         end
 
-      end
-    end # ChunkDataState
+        @lines << Diff::DiffLine.new(line_numbers, line[from_lines.length - 1 .. line.length])
 
-  end
+        parser.debug("line numbers: " + line_numbers.map { |x| x.inspect }.join("|"));
+      end
+
+
+      chunk = Diff::Chunk.new(@data[:src_files], @data[:dst_files], @lines)
+
+      return nil unless parser.more_lines?
+      peek = parser.peek_next_line
+      
+      if peek =~ /^\@\@/
+        return ChunkStartState.new(parser, data)
+      else
+        return DiffLineState.new(parser, data)
+      end
+
+    end
+  end # ChunkDataState
+
+end
