@@ -12,6 +12,7 @@ class Diff
 
 
   class Chunk
+    attr_accessor :src, :dst, :lines
     def initialize(src, dst, lines)
       @src = src
       @dst = dst
