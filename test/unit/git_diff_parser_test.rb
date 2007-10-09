@@ -22,11 +22,8 @@ class GitDiffParserTest < Test::Unit::TestCase
 
   def test_diffs_successful
     TestDiffs.each do |filename|
-      do_test_diff(filename)
+      diff = do_test_diff(filename)
+      assert !diff.nil?
     end
-  end
-
-  def test_simple
-    
   end
 end
