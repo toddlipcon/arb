@@ -1,15 +1,18 @@
+##
+# Generically represent a Diff
+##
 class Diff
   include Reloadable
 
   attr_accessor :chunks
 
-  def initialize
+  def initialize(chunks)
+    @chunks = chunks
   end
 
   def inspect
     self.chunks.join("\n")
   end
-
 
   class Chunk
     attr_accessor :src, :dst, :lines
@@ -29,8 +32,5 @@ class Diff
       @line = line
     end
   end
-
-
-
 
 end
