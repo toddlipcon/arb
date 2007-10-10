@@ -31,6 +31,18 @@ class Diff
       @line_numbers = line_numbers
       @line = line
     end
+
+    def unchanged?
+      @line_numbers.uniq.length == 1
+    end
+
+    def fully_inserted?
+      @line_numbers[0.. @line_numbers.length - 2].uniq == [nil]
+    end
+
+    def appears_in_output?
+      ! @line_numbers.last.nil?
+    end
   end
 
 end

@@ -3,7 +3,7 @@ Diff is <%= @diff.inspect %>
 <% @diff.chunks.each do |chunk| %>
 
 
-  <!-- Chunk header -->
+  <% # Chunk header %>
   <table>
     <tr>
       <td>Src file:</td>
@@ -17,15 +17,15 @@ Diff is <%= @diff.inspect %>
 
   <table border="1" cellspacing="0" cellpadding="0">
 
-  <!-- iterate over lines -->
+  <% # iterate over lines %>
   <% chunk.lines.each do |line| %>
-    <tr>
-    <!-- Line numbers -->
+    <tr class="diff_line">
+    <% # Line numbers %>
       <% line.line_numbers.each do |n| %>
-        <td><%=h n.nil? ? "-" : n %></td>
+        <td class="line_number"><%=h n.nil? ? "-" : n %></td>
       <% end %>
 
-      <td>
+      <td class="<%= (line_classes line).join(" ") %>">
         <% if line.line.empty? %>
           &nbsp;
         <% else %>

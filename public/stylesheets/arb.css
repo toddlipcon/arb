@@ -18,3 +18,18 @@ pre {
   border: 0;
   vertical-align: baseline;
 }
+
+
+.diff_line .inserted { 
+  background: #afa;
+}
+
+.diff_line .deleted {
+  background: #faa;
+}
+
+.diff_line .line_number {
+  background: #ffc;
+  color: #999;
+  text-align: center;
+}
