@@ -88,7 +88,28 @@ class GitDiffParserTest < Test::Unit::TestCase
       [nil, 3],
       [nil, 4]];
     assert_equal(expected_lines, chunk.lines.map { |l| l.line_numbers })
+  end
 
+  def test_merge
+    diff = do_test_diff('merge.diff')
+    assert !diff.nil?
 
+    assert_equal(1, diff.chunks.length)
+
+    chunk = diff.chunks[0]
+
+    assert_equal(9, chunk.lines.length)
+
+    expected_lines = [
+      [2, 2, 2],
+      [3, 3, 3],
+      [4, 4, 4],
+      [5, nil, nil],
+      [nil, 5, nil],
+      [nil, nil, 5],
+      [6, 6, 6],
+      [7, 7, 7],
+      [8, 8, 8]]
+    assert_equal(expected_lines, chunk.lines.map { |l| l.line_numbers })
   end
 end
