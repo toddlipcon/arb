@@ -21,6 +21,9 @@ class GitDiffParser
 
   def get_next_line
     @current_line_number += 1
+    if @current_line_number > @lines.length
+      raise "No more lines"
+    end
     @lines[@current_line_number - 1]
   end
 
@@ -74,7 +77,7 @@ diff --cc AsqlShard.java
     def parse_line
       line = @parser.get_next_line
 
-      if (! line.match(/^diff --git (.+)$/))
+      if (! line.match(/^diff (?:--git||--cc) (.+)$/))
         parser.except("Diff line had bad format at")
       end
 
@@ -97,7 +100,7 @@ index 2e7199ed8dbbe95d4df8fe0a22ec4035ae5dc6dc,97c30c3a5364561b123fc159f19329c58
     def parse_line
       line = @parser.get_next_line
 
-      if (! line.match(/^index ([\w,]+)\.\.(\w)+\s+\d+$/))
+      if (! line.match(/^index ([\w,]+)\.\.(\w)+(?:\s+\d+)?$/))
         parser.except("Indexline had bad format at")
       end
 
@@ -215,6 +218,8 @@ Reads lines of the type:
       done_lines = Array.new(all_ranges.length, nil)
       max_lines = all_ranges.map { |r| r.last }
 
+      parser.debug("Looking for max_lines: " + max_lines.join("|"))
+
       while done_lines != max_lines
         line = @parser.get_next_line
 
@@ -224,12 +229,27 @@ Reads lines of the type:
         # There is one for each "input" file
         diff_status = line[0.. from_lines.length - 1].split("")
 
+        has_plusses = ! diff_status.select { |x| x == '+' }.empty?
+        has_minuses = ! diff_status.select { |x| x == '-' }.empty?
+
+#        parser.debug("+: #{has_plusses.inspect}  -: #{has_minuses.inspect}")
+
+        if has_plusses and has_minuses
+          parser.except("Shouldn't have both plusses and minuses on a diff body line!")
+        end
+
+        # If there's a + in any of the columns, or all the flags are ' ', then
+        # it appears in the destination file
+        line_appears_in_dst = has_plusses || (! has_minuses)
+#        parser.debug("appears in dst: #{line_appears_in_dst.inspect}")
+
         #TODO(todd) add more checking on lengths
 
         line_numbers = []
 
         diff_status.each_index do |i|
-          if diff_status[i] != '+'
+          if (diff_status[i] == '-') ||
+              ((diff_status[i] == ' ') && line_appears_in_dst)
             line_numbers << from_lines[i]
             done_lines[i] = from_lines[i]
 
@@ -240,7 +260,7 @@ Reads lines of the type:
         end
 
         # Take care of the line number for the "destination" file
-        if diff_status.select { |x| x == "-" }.empty?
+        if line_appears_in_dst
           line_numbers << to_line
           done_lines[-1] = to_line
 
@@ -254,6 +274,7 @@ Reads lines of the type:
         parser.debug("line numbers: " + line_numbers.map { |x| x.inspect }.join("|"));
       end
 
+      parser.debug("Done parsing chunk")
 
       chunk = Diff::Chunk.new(@data[:src_files], @data[:dst_file], @lines)
 
