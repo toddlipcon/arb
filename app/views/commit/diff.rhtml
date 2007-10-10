@@ -25,7 +25,13 @@ Diff is <%= @diff.inspect %>
         <td><%=h n.nil? ? "-" : n %></td>
       <% end %>
 
-      <td><pre><%=h line.line.chomp %></pre></td>
+      <td>
+        <% if line.line.empty? %>
+          &nbsp;
+        <% else %>
+          <pre><%=h line.line %></pre>
+        <% end %>
+      </td>
     </tr>
   <% end %>
 
