@@ -13,7 +13,7 @@ class Commit < ActiveRecord::Base
     end
 
     Dir.chdir(self.repository_dir) do
-      return `git-diff-tree --no-commit-id --cc #{self.sha1}`
+      return `git-diff-tree --no-commit-id -C --cc #{self.sha1}`
     end
   end
 
