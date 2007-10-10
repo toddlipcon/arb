@@ -110,49 +110,49 @@ Reads the extended header lines:
   ##
   class ExtendedHeaderState < State
     def parse_line
-      data[:extended_headers] = [] if data[:extended_headers].nil?
+      data[:extended_headers] = []
 
-      line = @parser.get_next_line
+      while 1 do
+        line = @parser.get_next_line
 
-      if line =~ /^index ([\w,]+)\.\.(\w)+(?:\s+(\d+))?$/
-        data[:extended_headers] <<
-          ['index', {
-            :source_blobs => $1.split(','),
-            :dst_blob     => $2,
-            :index_mode   => $3
-          }]
-      elsif line =~ /^mode ([\d,]+)\.\.(\d+)$/
-        data[:extended_headers] <<
-          ['mode', {
-            :source_modes => $1.split(','),
-            :dst_mode     => $2
-          }]
-      elsif line =~ /^new file mode (\d+)$/
-        data[:extended_headers] <<
-          ['new file', {
-            :mode => $1
-          }]
-      elsif line =~ /^deleted file mode ([\d,]+)$/
-        data[:extended_headers] <<
-          ['deleted file', {
-            :modes => $1.split(',')
-          }]
-      elsif line =~ /^(rename|copy) (from|to) (.+)$/
-        data[:extended_headers] <<
-          [$1 + " " + $2, {
-            :path => $3
-          }]
-      elsif line =~ /^(similarity|dissimilarity) index (\d+)%$/
-        data[:extended_headers] <<
-          [$1 + " index", {
-            :percentage => $2
-          }]
-      else
-        parser.back_line
-        return FileLineState.new(parser, data)
+        if match_data = line.match(/^index ([\w,]+)\.\.(\w+)(?:\s+(\d+))?$/)
+          data[:extended_headers] <<
+            ['index', {
+              :src_blobs => match_data[1].split(','),
+              :dst_blob     => match_data[2],
+              :index_mode   => match_data[3]
+            }]
+        elsif match_data = line.match(/^mode ([\d,]+)\.\.(\d+)$/)
+          data[:extended_headers] <<
+            ['mode', {
+              :source_modes => match_data[1].split(','),
+              :dst_mode     => match_data[2]
+            }]
+        elsif match_data = line.match(/^new file mode (\d+)$/)
+          data[:extended_headers] <<
+            ['new file', {
+              :mode => match_data[1]
+            }]
+        elsif match_data = line.match(/^deleted file mode ([\d,]+)$/)
+          data[:extended_headers] <<
+            ['deleted file', {
+              :modes => match_data[1].split(',')
+            }]
+        elsif match_data = line.match(/^(rename|copy) (from|to) (.+)$/)
+          data[:extended_headers] <<
+            [$1 + " " + match_data[2], {
+              :path => match_data[3]
+            }]
+        elsif match_data = line.match(/^(similarity|dissimilarity) index (\d+)%$/)
+          data[:extended_headers] <<
+            [$1 + " index", {
+              :percentage => match_data[2]
+            }]
+        else
+          parser.back_line
+          return FileLineState.new(parser, data)
+        end
       end
-
-      return self.parse_line
     end
   end
 
@@ -327,8 +327,21 @@ Reads lines of the type:
       end
 
       parser.debug("Done parsing chunk")
+      
+      # Figure out the blobs involved
+      index_header = @data[:extended_headers].select { |x| x[0] == 'index' }.first
 
-      chunk = Diff::Chunk.new(@data[:src_files], @data[:dst_file], @lines)
+      if index_header.nil? || index_header.length != 2
+        parser.except("No index header found for chunk")
+      end
+
+      index_info = index_header[1]
+      blobs = index_info[:src_blobs].concat([index_info[:dst_blob]])
+      parser.debug('blobs: ' + blobs.inspect)
+
+
+      # Create the cunk
+      chunk = Diff::Chunk.new(@data[:src_files], @data[:dst_file], blobs, @lines)
 
       @data[:chunks] = [] if @data[:chunks].nil?
       @data[:chunks] << chunk

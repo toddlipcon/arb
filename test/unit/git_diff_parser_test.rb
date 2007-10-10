@@ -39,6 +39,10 @@ class GitDiffParserTest < Test::Unit::TestCase
     assert_equal(["a/AsqlShard.java"], chunk.src_files)
     assert_equal("b/AsqlShard.java", chunk.dst_file)
 
+    assert_equal(['ef696de6b68ac5094295fb7aa19dd6c5411f1886',
+                   '8e996ec0ceac0ac1477c7d9d508df8e49e185d24'],
+                 chunk.blobs);
+
     lines = chunk.lines
     assert_equal(7, lines.length)
 
@@ -102,6 +106,11 @@ class GitDiffParserTest < Test::Unit::TestCase
     assert_equal(1, diff.chunks.length)
 
     chunk = diff.chunks[0]
+
+    assert_equal(['2e7199ed8dbbe95d4df8fe0a22ec4035ae5dc6dc',
+                   '97c30c3a5364561b123fc159f19329c580fa53e5',
+                   'c69a2a5082a7aeb124de612c2f56a183f2bef01d'],
+                 chunk.blobs)
 
     assert_equal(9, chunk.lines.length)
 
