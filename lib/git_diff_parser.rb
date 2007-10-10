@@ -92,18 +92,20 @@ diff --cc AsqlShard.java
 =begin
 Reads the extended header lines:
 
-       2. It is followed by one or more extended header lines (this example
-          shows a merge with two parents):
+       2. It is followed by one or more extended header lines:
 
-          index <hash>,<hash>..<hash>
-          mode <mode>,<mode>..<mode>
+          old mode <mode>
+          new mode <mode>
+          deleted file mode <mode>
           new file mode <mode>
-          deleted file mode <mode>,<mode>
-       The mode <mode>,<mode>..<mode> line appears only if at least one of the
-       <mode> is different from the rest. Extended headers with information
-       about detected contents movement (renames and copying detection) are
-       designed to work with diff of two <tree-ish> and are not used by
-       combined diff format.
+          copy from <path>
+          copy to <path>
+          rename from <path>
+          rename to <path>
+          similarity index <number>
+          dissimilarity index <number>
+          index <hash>..<hash> <mode>
+
 =end
   ##
   class ExtendedHeaderState < State
@@ -134,6 +136,16 @@ Reads the extended header lines:
         data[:extended_headers] <<
           ['deleted file', {
             :modes => $1.split(',')
+          }]
+      elsif line =~ /^(rename|copy) (from|to) (.+)$/
+        data[:extended_headers] <<
+          [$1 + " " + $2, {
+            :path => $3
+          }]
+      elsif line =~ /^(similarity|dissimilarity) index (\d+)%$/
+        data[:extended_headers] <<
+          [$1 + " index", {
+            :percentage => $2
           }]
       else
         parser.back_line
