@@ -1,0 +1,20 @@
+pre,code,tt {
+  font:1em 'andale mono', monotype.com, 'lucida console', monospace;
+  line-height:1.5;
+}
+pre,code {
+  margin: 1.5em 0;
+  white-space: pre;
+}
+
+pre,code,tt {
+  font: 1em 'andale mono', 'monotype.com', 'lucida console', monospace;
+  line-height: 1.5;
+}
+
+pre {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+}

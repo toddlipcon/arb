@@ -1,0 +1,38 @@
+Diff is <%= @diff.inspect %>
+
+<% @diff.chunks.each do |chunk| %>
+
+
+  <!-- Chunk header -->
+  <table>
+    <tr>
+      <td>Src file:</td>
+      <td><%=h chunk.src_files.join(", ") %></td>
+    </tr>
+    <tr>
+      <td>Dst file:</td>
+      <td><%=h chunk.dst_file %></td>
+    </tr>
+  </table>
+
+  <table border="1" cellspacing="0" cellpadding="0">
+
+  <!-- iterate over lines -->
+  <% chunk.lines.each do |line| %>
+    <tr>
+    <!-- Line numbers -->
+      <% line.line_numbers.each do |n| %>
+        <td><%=h n.nil? ? "-" : n %></td>
+      <% end %>
+
+      <td><pre><%=h line.line.chomp %></pre></td>
+    </tr>
+  <% end %>
+
+  </table>
+
+  Chunk: <%= chunk %>
+
+
+
+<% end %>
