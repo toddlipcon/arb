@@ -85,29 +85,62 @@ diff --cc AsqlShard.java
 
       data['diff_files'] = $1.split(/ /);
 
-      return IndexLineState.new(parser, data)
+      return ExtendedHeaderState.new(parser, data)
     end
   end
 
 =begin
-Reads:
+Reads the extended header lines:
 
-index 2e7199ed8dbbe95d4df8fe0a22ec4035ae5dc6dc,97c30c3a5364561b123fc159f19329c580fa53e5..c69a2a5082a7aeb124de612c2f56a183f2bef01d
+       2. It is followed by one or more extended header lines (this example
+          shows a merge with two parents):
 
+          index <hash>,<hash>..<hash>
+          mode <mode>,<mode>..<mode>
+          new file mode <mode>
+          deleted file mode <mode>,<mode>
+       The mode <mode>,<mode>..<mode> line appears only if at least one of the
+       <mode> is different from the rest. Extended headers with information
+       about detected contents movement (renames and copying detection) are
+       designed to work with diff of two <tree-ish> and are not used by
+       combined diff format.
 =end
   ##
-  class IndexLineState < State
+  class ExtendedHeaderState < State
     def parse_line
+      data[:extended_headers] = [] if data[:extended_headers].nil?
+
       line = @parser.get_next_line
 
-      if (! line.match(/^index ([\w,]+)\.\.(\w)+(?:\s+\d+)?$/))
-        parser.except("Indexline had bad format at")
+      if line =~ /^index ([\w,]+)\.\.(\w)+(?:\s+(\d+))?$/
+        data[:extended_headers] <<
+          ['index', {
+            :source_blobs => $1.split(','),
+            :dst_blob     => $2,
+            :index_mode   => $3
+          }]
+      elsif line =~ /^mode ([\d,]+)\.\.(\d+)$/
+        data[:extended_headers] <<
+          ['mode', {
+            :source_modes => $1.split(','),
+            :dst_mode     => $2
+          }]
+      elsif line =~ /^new file mode (\d+)$/
+        data[:extended_headers] <<
+          ['new file', {
+            :mode => $1
+          }]
+      elsif line =~ /^deleted file mode ([\d,]+)$/
+        data[:extended_headers] <<
+          ['deleted file', {
+            :modes => $1.split(',')
+          }]
+      else
+        parser.back_line
+        return FileLineState.new(parser, data)
       end
 
-      data[:source_blobs] = $1.split(',')
-      data[:dst_blob] = $2
-
-      return FileLineState.new(parser, data)
+      return self.parse_line
     end
   end
 
@@ -217,6 +250,13 @@ Reads lines of the type:
 
       done_lines = Array.new(all_ranges.length, nil)
       max_lines = all_ranges.map { |r| r.last }
+
+      # If there's an empty range, then we don't expect to see any lines
+      # in that source, so set max_lines to nil in that column
+      max_lines.each_index do |i|
+        max_lines[i] = nil if all_ranges[i].last < all_ranges[i].first
+      end
+      
 
       parser.debug("Looking for max_lines: " + max_lines.join("|"))
 

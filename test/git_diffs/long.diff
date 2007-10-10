@@ -1,0 +1,100 @@
+diff --git a/lib/git_diff_parser.rb b/lib/git_diff_parser.rb
+index b066b5d..457b2a7 100644
+--- a/lib/git_diff_parser.rb
++++ b/lib/git_diff_parser.rb
+@@ -210,29 +210,40 @@ Reads lines of the type:
+       from_lines = @chunk_data[:from_file_ranges].map {|r| r.first}
+       to_line = @chunk_data[:to_file_range].first
+ 
+-      while to_line <= @chunk_data[:to_file_range].last
++      all_ranges = @chunk_data[:from_file_ranges].push(@chunk_data[:to_file_range])
++
++      done_lines = Array.new(all_ranges.length, nil)
++      max_lines = all_ranges.map { |r| r.last }
++
++      while done_lines != max_lines
+         line = @parser.get_next_line
+ 
+         parser.debug("Parsing line: #{line}")
+ 
++        # Get the '+', ' ', and '-' flags from the beginning of the line
++        # There is one for each "input" file
+         diff_status = line[0.. from_lines.length - 1].split("")
+-        #          parser.debug("Diff_status: #{diff_status.inspect}")
+ 
+         #TODO(todd) add more checking on lengths
+ 
+         line_numbers = []
+ 
+         diff_status.each_index do |i|
+-          if diff_status[i] == " "
++          if diff_status[i] != '+'
+             line_numbers << from_lines[i]
++            done_lines[i] = from_lines[i]
++
+             from_lines[i] += 1
+           else
+             line_numbers << nil
+           end
+         end
+ 
++        # Take care of the line number for the "destination" file
+         if diff_status.select { |x| x == "-" }.empty?
+           line_numbers << to_line
++          done_lines[-1] = to_line
++
+           to_line += 1
+         else
+           line_numbers << nil
+diff --git a/test/git_diffs/multi_file.diff b/test/git_diffs/multi_file.diff
+new file mode 100644
+index 0000000..069f106
+--- /dev/null
++++ b/test/git_diffs/multi_file.diff
+@@ -0,0 +1,33 @@
++diff --git a/AsqlShard.java b/AsqlShard.java
++index ef696de6b68ac5094295fb7aa19dd6c5411f1886..8e996ec0ceac0ac1477c7d9d508df8e49e185d24 100644
++--- a/AsqlShard.java
+++++ b/AsqlShard.java
++@@ -1,5 +1,9 @@
++ package com.amiestreet.asql;
++ 
+++
+++/**
+++ * Represents a shard
+++ */
++ public class AsqlShard {
++ 
++   public AsqlShard(int id, String dsn) {
++diff --git a/initial b/initial
++index f74395c6c5c0434bebfbadb72f55c1d521fb3a1d..401fa1898de985ce0ef707d7b62760b40933b7e1 100644
++--- a/initial
+++++ b/initial
++@@ -1,5 +1,3 @@
++ Making some change to the initial file
++ Another change
++ I made another change
++-
++-Adding a change
++diff --git a/newfile b/newfile
++index c8b09c8c8d36fb7a8567d049150c700834f4caa1..aa770c9521cea1e6d3a5b375727ae20cae4c37ea 100644
++--- a/newfile
+++++ b/newfile
++@@ -1,2 +1,4 @@
++ I'm making a new file
++ and adding a line in review-3
+++
+++And adding a line
+diff --git a/test/unit/git_diff_parser_test.rb b/test/unit/git_diff_parser_test.rb
+index f69e81a..3b2c6b7 100644
+--- a/test/unit/git_diff_parser_test.rb
++++ b/test/unit/git_diff_parser_test.rb
+@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../test_helper'
+ 
+ class GitDiffParserTest < Test::Unit::TestCase
+ 
+-  TestDiffs = ['simple.diff']
++  TestDiffs = ['simple.diff', 'multi_file.diff']
+ 
+   def setup
+     @done_diffs = Hash.new
