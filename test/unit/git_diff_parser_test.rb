@@ -52,6 +52,11 @@ class GitDiffParserTest < Test::Unit::TestCase
       [3, 7]];
 
     assert_equal(expected_lines, lines.map { |l| l.line_numbers })
+
+    # Check to make sure the diffed lines don't include the "+" or "-" or whatever in the
+    # "line" property
+    assert_equal(" * Represents a shard", lines[4].line)
+
   end
 
   def test_multi_file

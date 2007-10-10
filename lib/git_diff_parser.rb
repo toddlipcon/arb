@@ -321,7 +321,7 @@ Reads lines of the type:
           line_numbers << nil
         end
 
-        @lines << Diff::DiffLine.new(line_numbers, line[from_lines.length - 1 .. line.length])
+        @lines << Diff::DiffLine.new(line_numbers, line[from_lines.length .. line.length])
 
         parser.debug("line numbers: " + line_numbers.map { |x| x.inspect }.join("|"));
       end
