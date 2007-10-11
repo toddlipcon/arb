@@ -24,6 +24,20 @@ class Commit < ActiveRecord::Base
     end
   end
 
+  def git_show_commit
+    check_valid
+
+    in_repo do
+      return `git-show --pretty=raw -z #{self.sha1}`
+    end
+  end
+
+  def parse_info
+    return @parsed_info unless @parsed_info.nil?
+
+    @parsed_info = GitCommitParser.new.parse(git_show_commit)
+  end
+
   def diff
     GitDiffParser.new.parse(self.diff_tree)
   end

@@ -45,7 +45,7 @@ class GitDiffParser
   end
 
   def debug(msg)
-    puts "PARSER DEBUG: #{msg}"
+    # puts "PARSER DEBUG: #{msg}"
   end
 
   class State
