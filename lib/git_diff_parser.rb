@@ -13,7 +13,7 @@ class GitDiffParser
 
     while (! @state.nil? and ! @state.done?) do
       debug "Parsing -- on line #{@current_line_number}"
-      @state = @state.parse_line
+      @state = @state.parse
     end
 
     @state.diff
@@ -57,7 +57,7 @@ class GitDiffParser
       @data = data
     end
 
-    def parse_line
+    def parse
       return nil
     end
 
@@ -74,7 +74,7 @@ diff --cc AsqlShard.java
 =end
   ##
   class DiffLineState < State
-    def parse_line
+    def parse
       line = @parser.get_next_line
 
       if (! line.match(/^diff (?:--git||--cc) (.+)$/))
@@ -109,7 +109,7 @@ Reads the extended header lines:
 =end
   ##
   class ExtendedHeaderState < State
-    def parse_line
+    def parse
       data[:extended_headers] = []
 
       while 1 do
@@ -172,16 +172,16 @@ Reads:
       @dst_files = Array.new
     end
 
-    def parse_line
+    def parse
       line = @parser.get_next_line
 
       if (line.match(/^--- (.+)$/))
         @src_files << $1
-        return parse_line
+        return parse
 
       elsif (line.match(/^\+\+\+ (.+)$/))
         @dst_files << $1
-        return parse_line
+        return parse
 
       else
         @parser.back_line
@@ -207,7 +207,7 @@ Reads the header at the top of a chunk that looks like:
 
 =end
   class ChunkStartState < State
-    def parse_line
+    def parse
       line = @parser.get_next_line
       if !line.match(/^\@{2,} ((?:[\-\+]\d+,\d+ )+)\@{2,}/)
         parser.except("Bad chunk start state")
@@ -254,7 +254,7 @@ Reads lines of the type:
       @lines = []
     end
 
-    def parse_line
+    def parse
       from_lines = @chunk_data[:from_file_ranges].map {|r| r.first}
       to_line = @chunk_data[:to_file_range].first
 
