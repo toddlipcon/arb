@@ -91,14 +91,18 @@ Reads:
 diff --cc AsqlShard.java
 
 =end
+  def match_diff_line(line)
+    return line.match(/^diff (?:--git||--cc) (.+)$/)
+  end
+
   def parse_diff_line
     line = get_next_line
 
-    if (! line.match(/^diff (?:--git||--cc) (.+)$/))
+    unless match = match_diff_line(line)
       except("Diff line had bad format")
     end
 
-    return { :diff_files => $1.split(/ /) }
+    return { :diff_files => match[1].split(/ /) }
   end
 
 =begin
@@ -164,6 +168,7 @@ Reads the extended header lines:
         return headers
       end
     end
+    headers
   end
 
 
@@ -175,7 +180,7 @@ Reads:
 
 =end
   def parse_file_lines
-    if match = peek_next_line.match(/^Binary files (.+) and (.+) differ$/)
+    if has_more_lines? && match = peek_next_line.match(/^Binary files (.+) and (.+) differ$/)
       get_next_line
       return {
         :src_files => [match[1]],
@@ -356,11 +361,28 @@ Reads lines of the type:
 
   def parse_file_change_set
     diff_line = parse_diff_line
+    debug "Parsed diff line: #{diff_line.inspect}"
+
     extended_headers = parse_extended_headers
-    files = parse_file_lines
+
+    # If the file is empty (so the diff is only showing a creation, deletion
+    # mode change, etc, then there won't be any file lines, and it will go right
+    # on to the next diff. Check for that here.
+    if has_more_lines? && !match_diff_line(peek_next_line)
+      files = parse_file_lines
+    else
+      except "bad diff line for chunkless diff" if diff_line[:diff_files].length != 2
+
+      files = {
+        :src_files => [diff_line[:diff_files][0]],
+        :dst_file  => diff_line[:diff_files][1]
+      }
+    end
+
     chunks = parse_chunks
 
     # Figure out the blobs involved
+    debug "Extended headers: #{extended_headers.inspect}"
     index_header = extended_headers.select { |x| x[0] == 'index' }.first
 
     if index_header.nil? || index_header.length != 2
