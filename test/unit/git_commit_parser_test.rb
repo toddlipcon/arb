@@ -22,5 +22,15 @@ class GitCommitParserTest < Test::Unit::TestCase
                  },
                  info[:info])
                  
+
+    assert_equal("Merge branch 'master' into b\n\nConflicts:\n\n\tAsqlShard.java",
+                 info[:log])
   end
+
+  def test_parse_another
+    info = GitCommitParser.new.parse(read_test('second.commit'))
+    assert_not_nil info
+  end
+
+
 end

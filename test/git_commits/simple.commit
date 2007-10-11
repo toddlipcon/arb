@@ -10,6 +10,7 @@ committer Todd Lipcon <todd@turbo.corp.amiestreet.com> 1191951070 -0400
     Conflicts:
     
     	AsqlShard.java
+
 diff --cc AsqlShard.java
 index 2e7199e,97c30c3..c69a2a5
 --- a/AsqlShard.java

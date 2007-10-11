@@ -6,7 +6,7 @@ class GitCommitParser
 
     # The log ends up indented 4 spaces
 
-    log.sub!(/^\s{4}?/, '')
+    log.gsub!(/^\s{4}?/m, '')
 
     # Take a series of lines of the format:
     # <key> <value with multiple words>
