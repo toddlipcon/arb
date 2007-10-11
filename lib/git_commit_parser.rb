@@ -2,13 +2,11 @@ class GitCommitParser
   include Reloadable
 
   def parse(info)
-    (info_section, log_and_diff) = info.split("\n\n", 2)
-    (log, diff) = log_and_diff.split("\0")
+    (info_section, log, diff) = info.split("\n\n", 3)
 
     # The log ends up indented 4 spaces
 
     log.sub!(/^\s{4}?/, '')
-
 
     # Take a series of lines of the format:
     # <key> <value with multiple words>
