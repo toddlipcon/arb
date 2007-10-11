@@ -19,6 +19,24 @@ pre {
   vertical-align: baseline;
 }
 
+table.diff_header{
+  border: solid 1px #000;
+  margin: 2em;
+}
+
+.diff_chunk { 
+  margin: 1em;
+}
+
+.diff_chunk .chunk_header { 
+  margin-bottom: 1em;
+  margin-left: 1em;
+  background: #ccc;  
+  border: 1px solid #000;
+  padding: 0.5em;
+}
+
+.diff_chunk .chunk_header .header { font-weight: bold; }
 
 .diff_line .inserted { 
   background: #afa;

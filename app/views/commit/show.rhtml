@@ -1,6 +1,4 @@
-<%=h @commit.parse_info.inspect %>
-
-<table>
+<table class="diff_header">
   <tr>
     <td>SHA1:</td>
     <td><%=h @commit.sha1 %></td>
@@ -18,3 +16,7 @@
     <td><pre><%=h @commit.log_message %></pre></td>
   </tr>
 </table>
+
+<% @commit.diff.chunks.each do |chunk| %>
+  <%= render_partial 'chunk', chunk %>
+<% end %>

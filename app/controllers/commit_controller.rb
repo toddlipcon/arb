@@ -6,4 +6,8 @@ class CommitController < ApplicationController
 
     @diff = @commit.diff
   end
+
+  def show
+    @commit = Commit.new(:sha1 => params[:sha1])
+  end
 end
