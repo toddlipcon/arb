@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/../test_helper'
 class GitDiffParserTest < Test::Unit::TestCase
 
   TestDiffs = ['simple.diff', 'multi_file.diff', 'merge.diff',
-    'long.diff', 'rename.diff', 'no_newline.diff']
+    'long.diff', 'rename.diff', 'no_newline.diff', 'binary_files.diff']
 
   def setup
     @done_diffs = Hash.new
@@ -141,5 +141,34 @@ class GitDiffParserTest < Test::Unit::TestCase
       [7, 7, 7],
       [8, 8, 8]]
     assert_equal(expected_lines, chunk.lines.map { |l| l.line_numbers })
+  end
+
+  def test_binary_files
+    diff = do_test_diff('binary_files.diff')
+    assert_not_nil diff
+
+    assert_equal(4, diff.file_change_sets.length)
+    
+    # Test that a non-binary change set isn't marked binary
+    nonbinary_fcs = diff.file_change_sets[1]
+    assert_equal(false, nonbinary_fcs.binary?)
+
+
+    # Test that a binary change set is correctly parsed
+    binary_fcs = diff.file_change_sets[3]    
+    assert_equal(true, binary_fcs.binary?)
+
+    assert_equal(['a/test/git_commits/simple.commit'],
+                 binary_fcs.src_files)
+
+    assert_equal('b/test/git_commits/simple.commit',
+                 binary_fcs.dst_file)
+
+    assert_equal(['9d5d5dc', 'ec8cf1e'],
+                 binary_fcs.blobs)
+
+    assert_equal(0,
+                 binary_fcs.chunks.length)
+    
   end
 end

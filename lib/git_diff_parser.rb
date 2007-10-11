@@ -175,6 +175,15 @@ Reads:
 
 =end
   def parse_file_lines
+    if match = peek_next_line.match(/^Binary files (.+) and (.+) differ$/)
+      get_next_line
+      return {
+        :src_files => [match[1]],
+        :dst_file  => match[2],
+        :binary    => 1
+      }
+    end
+
     src_files = []
     dst_files = []
 
@@ -362,8 +371,7 @@ Reads lines of the type:
     blobs = index_info[:src_blobs].concat([index_info[:dst_blob]])
     debug('blobs: ' + blobs.inspect)
 
-    return Diff::FileChangeSet.new(files[:src_files],
-                                   files[:dst_file],
+    return Diff::FileChangeSet.new(files,
                                    blobs,
                                    chunks);
   end

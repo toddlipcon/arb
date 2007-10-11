@@ -1,13 +1,4 @@
 pre,code,tt {
-  font:1em 'andale mono', monotype.com, 'lucida console', monospace;
-  line-height:1.5;
-}
-pre,code {
-  margin: 1.5em 0;
-  white-space: pre;
-}
-
-pre,code,tt {
   font: 1em 'andale mono', 'monotype.com', 'lucida console', monospace;
   line-height: 1.5;
 }
@@ -37,6 +28,12 @@ table.diff_header{
 }
 
 .file_change_set .file_change_set_header .header { font-weight: bold; }
+
+.file_change_set .file_change_set_header .binary_files {
+  background: #ff6;
+  border: 1px solid #000;
+  font-weight: bold;
+}
 
 .diff_line .inserted { 
   background: #afa;

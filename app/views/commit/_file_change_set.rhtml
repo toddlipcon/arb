@@ -8,6 +8,13 @@
       <td class="header">Dst file:</td>
       <td><%=h file_change_set.dst_file %></td>
     </tr>
+    <% if file_change_set.binary? %>
+      <tr>
+        <td class="binary_files" colspan="2">
+          Binary files differ
+        </td>
+      </tr>
+    <% end %>
   </table>
 
   <% file_change_set.chunks.each do |chunk| %>
