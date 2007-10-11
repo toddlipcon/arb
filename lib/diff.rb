@@ -21,14 +21,15 @@ class Diff
   # and 0 for created files)
   ##
   class FileChangeSet
-    attr_reader :src_files, :dst_file, :blobs, :chunks, :binary
+    attr_reader :src_files, :dst_file, :blobs, :chunks, :extended_headers, :binary
 
-    def initialize(files, blobs, chunks)
+    def initialize(files, blobs, chunks, extended_headers)
 
       @src_files = files[:src_files]
       @dst_file  = files[:dst_file]
       @blobs     = blobs
       @chunks    = chunks
+      @extended_headers = extended_headers
 
       @binary = ! files[:binary].nil?
     end

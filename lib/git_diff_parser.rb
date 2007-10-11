@@ -125,44 +125,44 @@ Reads the extended header lines:
 =end
   ##
   def parse_extended_headers
-    headers = []
+    headers = {}
 
     while has_more_lines? do
       line = get_next_line
 
       if match_data = line.match(/^index ([\w,]+)\.\.(\w+)(?:\s+(\d+))?$/)
-        headers <<
-          ['index', {
+        headers['index'] =
+          {
             :src_blobs => match_data[1].split(','),
             :dst_blob     => match_data[2],
             :index_mode   => match_data[3]
-          }]
+          }
       elsif match_data = line.match(/^mode ([\d,]+)\.\.(\d+)$/)
-        headers <<
-          ['mode', {
+        headers['mode'] =
+          {
             :src_modes => match_data[1].split(','),
             :dst_mode     => match_data[2]
-          }]
+          }
       elsif match_data = line.match(/^new file mode (\d+)$/)
-        headers <<
-          ['new file', {
+        headers['new file'] =
+          {
             :mode => match_data[1]
-          }]
+          }
       elsif match_data = line.match(/^deleted file mode ([\d,]+)$/)
-        headers <<
-          ['deleted file', {
+        headers['deleted file'] =
+          {
             :modes => match_data[1].split(',')
-          }]
+          }
       elsif match_data = line.match(/^(rename|copy) (from|to) (.+)$/)
-        headers <<
-          [$1 + " " + match_data[2], {
+        headers[$1 + " " + match_data[2]] =
+          {
             :path => match_data[3]
-          }]
+          }
       elsif match_data = line.match(/^(similarity|dissimilarity) index (\d+)%$/)
-        headers <<
-          [$1 + " index", {
+        headers[match_data[1] + " index"] =
+          {
             :percentage => match_data[2]
-          }]
+          }
       else
         back_line
         return headers
@@ -383,18 +383,17 @@ Reads lines of the type:
 
     # Figure out the blobs involved
     debug "Extended headers: #{extended_headers.inspect}"
-    index_header = extended_headers.select { |x| x[0] == 'index' }.first
 
-    if index_header.nil? || index_header.length != 2
+    unless index_info = extended_headers['index']
       except("No index header found for chunk")
     end
 
-    index_info = index_header[1]
     blobs = index_info[:src_blobs].concat([index_info[:dst_blob]])
     debug('blobs: ' + blobs.inspect)
 
     return Diff::FileChangeSet.new(files,
                                    blobs,
-                                   chunks);
+                                   chunks,
+                                   extended_headers);
   end
 end
