@@ -19,34 +19,62 @@ class GitDiffParser
     @state.diff
   end
 
+
+  ##
+  # Returns the next line of the input, or throw an exception
+  # if there are no more lines.
+  ##
   def get_next_line
-    @current_line_number += 1
-    if @current_line_number > @lines.length
+    if ! self.more_lines?
       raise "No more lines"
     end
+    @current_line_number += 1
     @lines[@current_line_number - 1]
   end
 
+  ##
+  # Moves the input line pointer back one line.
+  # Throws an exception if the parser is currently on the first
+  # line of the file.
+  ##
   def back_line
+    self.except "Can't go back a line" if @current_line_number <= 1
+
     @current_line_number -= 1
   end
 
+  ##
+  # Returns true if there are more lines in the file to read.
+  ##
   def more_lines?
-    return @current_line_number < @lines.length - 1
+    return @current_line_number < @lines.length
   end
 
+  ##
+  # Returns the next line that would be returned if get_next_line
+  # were called, but does not advance the line pointer.
+  # Returns nil if currently at the end of the file.
+  ##
   def peek_next_line
     return @lines[@current_line_number]
   end
 
+  ##
+  # Throws an exception including nice information about what
+  # line the parser is currently on.
+  ##
   def except(msg)
     throw Exception.new("Parse error (#{msg}) at line #{@current_line_number}: " +
                         "#{@lines[@current_line_number - 1]}")
   end
 
+  ##
+  # Prints a debug message.
+  ##
   def debug(msg)
     # puts "PARSER DEBUG: #{msg}"
   end
+
 
   class State
     attr_accessor :parser
