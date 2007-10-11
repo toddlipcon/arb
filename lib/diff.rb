@@ -4,26 +4,48 @@
 class Diff
   include Reloadable
 
-  attr_accessor :chunks
+  attr_accessor :file_change_sets
 
-  def initialize(chunks)
-    @chunks = chunks
+  def initialize(file_change_sets)
+    @file_change_sets = file_change_sets
   end
 
   def inspect
-    self.chunks.join("\n")
+    self.file_change_sets.join("\n")
   end
 
+  ##
+  # A set of change chunks that apply to the same set of files.
+  # Each FileChangeSet produces changes in a single destination file,
+  # and has any number of source files (usually 1, but more for merges,
+  # and 0 for created files)
+  ##
+  class FileChangeSet
+    attr_accessor :src_files, :dst_file, :blobs, :chunks
+
+    def initialize(src_files, dst_file, blobs, chunks)
+
+      @src_files = src_files
+      @dst_file  = dst_file
+      @blobs     = blobs
+      @chunks    = chunks
+    end
+  end
+
+  ##
+  # A set of line changes
+  ##
   class Chunk
-    attr_accessor :src_files, :dst_file, :blobs, :lines
-    def initialize(src, dst, blobs, lines)
-      @src_files = src
-      @dst_file = dst
-      @blobs = blobs
+    attr_accessor :lines
+
+    def initialize(lines)
       @lines = lines
     end
   end
 
+  ##
+  # A single line of differences
+  ##
   class DiffLine
     attr_accessor :line_numbers
     attr_accessor :line

@@ -17,6 +17,6 @@
   </tr>
 </table>
 
-<% @commit.diff.chunks.each do |chunk| %>
-  <%= render_partial 'chunk', chunk %>
+<% @commit.diff.file_change_sets.each do |fcs| %>
+  <%= render_partial 'file_change_set', fcs %>
 <% end %>

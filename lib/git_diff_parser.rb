@@ -5,27 +5,35 @@ class GitDiffParser
   attr_accessor :state
   attr_accessor :current_line_number
 
+  ##
+  # Parses a "combined format" textual diff output from a command like
+  #
+  # % git-diff-tree --cc -C <hash>
+  # 
+  # Returns a Diff object.
+  # Throws an Exception if the Diff cannot be parsed.
+  ##
   def parse(diff)
     @lines = diff.split(/\n/)
     @current_line_number = 0
 
-    @state = DiffLineState.new(self)
+    file_change_sets = []
 
-    while (! @state.nil? and ! @state.done?) do
-      debug "Parsing -- on line #{@current_line_number}"
-      @state = @state.parse
+    while has_more_lines? do
+      
+      file_change_sets << parse_file_change_set
+
     end
 
-    @state.diff
+    return Diff.new(file_change_sets)
   end
-
 
   ##
   # Returns the next line of the input, or throw an exception
   # if there are no more lines.
   ##
   def get_next_line
-    if ! self.more_lines?
+    if ! has_more_lines?
       raise "No more lines"
     end
     @current_line_number += 1
@@ -46,7 +54,7 @@ class GitDiffParser
   ##
   # Returns true if there are more lines in the file to read.
   ##
-  def more_lines?
+  def has_more_lines?
     return @current_line_number < @lines.length
   end
 
@@ -75,24 +83,7 @@ class GitDiffParser
     # puts "PARSER DEBUG: #{msg}"
   end
 
-
-  class State
-    attr_accessor :parser
-    attr_accessor :data
-
-    def initialize(parser, data = {})
-      @parser = parser
-      @data = data
-    end
-
-    def parse
-      return nil
-    end
-
-    def done?
-      return false
-    end
-  end
+########################################
 
 =begin
 Reads:
@@ -100,21 +91,14 @@ Reads:
 diff --cc AsqlShard.java
 
 =end
-  ##
-  class DiffLineState < State
-    def parse
-      line = @parser.get_next_line
+  def parse_diff_line
+    line = get_next_line
 
-      if (! line.match(/^diff (?:--git||--cc) (.+)$/))
-        parser.except("Diff line had bad format at")
-      end
-
-      parser.debug("matched diff args: #{$1}")
-
-      data['diff_files'] = $1.split(/ /);
-
-      return ExtendedHeaderState.new(parser, data)
+    if (! line.match(/^diff (?:--git||--cc) (.+)$/))
+      except("Diff line had bad format")
     end
+
+    return { :diff_files => $1.split(/ /) }
   end
 
 =begin
@@ -136,53 +120,52 @@ Reads the extended header lines:
 
 =end
   ##
-  class ExtendedHeaderState < State
-    def parse
-      data[:extended_headers] = []
+  def parse_extended_headers
+    headers = []
 
-      while 1 do
-        line = @parser.get_next_line
+    while has_more_lines? do
+      line = get_next_line
 
-        if match_data = line.match(/^index ([\w,]+)\.\.(\w+)(?:\s+(\d+))?$/)
-          data[:extended_headers] <<
-            ['index', {
-              :src_blobs => match_data[1].split(','),
-              :dst_blob     => match_data[2],
-              :index_mode   => match_data[3]
-            }]
-        elsif match_data = line.match(/^mode ([\d,]+)\.\.(\d+)$/)
-          data[:extended_headers] <<
-            ['mode', {
-              :source_modes => match_data[1].split(','),
-              :dst_mode     => match_data[2]
-            }]
-        elsif match_data = line.match(/^new file mode (\d+)$/)
-          data[:extended_headers] <<
-            ['new file', {
-              :mode => match_data[1]
-            }]
-        elsif match_data = line.match(/^deleted file mode ([\d,]+)$/)
-          data[:extended_headers] <<
-            ['deleted file', {
-              :modes => match_data[1].split(',')
-            }]
-        elsif match_data = line.match(/^(rename|copy) (from|to) (.+)$/)
-          data[:extended_headers] <<
-            [$1 + " " + match_data[2], {
-              :path => match_data[3]
-            }]
-        elsif match_data = line.match(/^(similarity|dissimilarity) index (\d+)%$/)
-          data[:extended_headers] <<
-            [$1 + " index", {
-              :percentage => match_data[2]
-            }]
-        else
-          parser.back_line
-          return FileLineState.new(parser, data)
-        end
+      if match_data = line.match(/^index ([\w,]+)\.\.(\w+)(?:\s+(\d+))?$/)
+        headers <<
+          ['index', {
+            :src_blobs => match_data[1].split(','),
+            :dst_blob     => match_data[2],
+            :index_mode   => match_data[3]
+          }]
+      elsif match_data = line.match(/^mode ([\d,]+)\.\.(\d+)$/)
+        headers <<
+          ['mode', {
+            :src_modes => match_data[1].split(','),
+            :dst_mode     => match_data[2]
+          }]
+      elsif match_data = line.match(/^new file mode (\d+)$/)
+        headers <<
+          ['new file', {
+            :mode => match_data[1]
+          }]
+      elsif match_data = line.match(/^deleted file mode ([\d,]+)$/)
+        headers <<
+          ['deleted file', {
+            :modes => match_data[1].split(',')
+          }]
+      elsif match_data = line.match(/^(rename|copy) (from|to) (.+)$/)
+        headers <<
+          [$1 + " " + match_data[2], {
+            :path => match_data[3]
+          }]
+      elsif match_data = line.match(/^(similarity|dissimilarity) index (\d+)%$/)
+        headers <<
+          [$1 + " index", {
+            :percentage => match_data[2]
+          }]
+      else
+        back_line
+        return headers
       end
     end
   end
+
 
 =begin
 Reads:
@@ -191,79 +174,70 @@ Reads:
 +++ b/AsqlShard.java
 
 =end
-  ##
-  class FileLineState < State
-    def initialize(parser, data)
-      super(parser, data)
+  def parse_file_lines
+    src_files = []
+    dst_files = []
 
-      @src_files = Array.new
-      @dst_files = Array.new
-    end
-
-    def parse
-      line = @parser.get_next_line
+    while has_more_lines? do
+      line = get_next_line
 
       if (line.match(/^--- (.+)$/))
-        @src_files << $1
-        return parse
-
+        src_files << $1
       elsif (line.match(/^\+\+\+ (.+)$/))
-        @dst_files << $1
-        return parse
-
+        dst_files << $1
       else
-        @parser.back_line
-
-        if @dst_files.length != 1
-          parser.except("Wrong number of destination files -- need exactly 1")
-        end
-
-        data[:src_files] = @src_files
-        data[:dst_file] = @dst_files[0]
-        return ChunkStartState.new(parser, data)
+        back_line
+        break
       end
     end
-  end # FileLineState
 
+    if dst_files.length != 1
+      except("Wrong number of destination files -- need exactly 1")
+    end
 
+    return {
+      :src_files => src_files,
+      :dst_file => dst_files[0]
+    }
+  end
 
 =begin
 
-Reads the header at the top of a chunk that looks like:
+Match the header at the top of a chunk that looks like:
 
 @@@ -2,7 -2,7 +2,7 @@@ package com.amiestreet.asql
 
 =end
-  class ChunkStartState < State
-    def parse
-      line = @parser.get_next_line
-      if !line.match(/^\@{2,} ((?:[\-\+]\d+,\d+ )+)\@{2,}/)
-        parser.except("Bad chunk start state")
-      end
+  def match_chunk_header(line)
+    return line.match(/^\@{2,} ((?:[\-\+]\d+,\d+ )+)\@{2,}/);
+  end
 
-      range_strings = $~.to_a[1].split(' ')
-      ranges = range_strings.map do |s|
-        (start, len) = s[1,s.length].split(/,/).map { |x| x.to_i }
-
-        [s[0], Range.new(start, start+len - 1)]
-      end
-
-      parser.debug("Ranges: " + ranges.map {|a| a.join(":")}.join("|"));
-
-      chunk = {}
-      chunk[:from_file_ranges] = ranges.select {|r| r[0] == ?-}.map { |r| r[1] }
-
-      to_file_ranges   = ranges.select {|r| r[0] == ?+}.map { |r| r[1] }
-
-      if to_file_ranges.length != 1
-        parser.except("Too many to_file_ranges");
-      end
-
-      chunk[:to_file_range] = to_file_ranges[0]
-
-      return ChunkDataState.new(parser, data, chunk)
+  def parse_chunk_header
+    line = get_next_line
+    unless match = match_chunk_header(line)
+      except("Bad chunk start state")
     end
-  end #ChunkStartState
+
+    ranges = match[1].split(' ').map do |s|
+      (start, len) = s[1,s.length].split(/,/).map { |x| x.to_i }
+
+      [s[0], Range.new(start, start+len - 1)]
+    end
+
+    debug("Ranges: " + ranges.map {|a| a.join(":")}.join("|"));
+    
+    from_file_ranges = ranges.select {|r| r[0] == ?-}.map { |r| r[1] }
+    to_file_ranges   = ranges.select {|r| r[0] == ?+}.map { |r| r[1] }
+
+    if to_file_ranges.length != 1
+      except("Too many to_file_ranges");
+    end
+
+    return {
+      :from_ranges => from_file_ranges,
+      :to_range => to_file_ranges[0]
+    }
+  end
 
 =begin
 
@@ -274,139 +248,123 @@ Reads lines of the type:
  ++ * Represents a shard. Its somewhere between OK to great
 
 =end
+  def parse_chunk_lines(chunk_header)
+    from_lines = chunk_header[:from_ranges].map {|r| r.first}
+    to_line = chunk_header[:to_range].first
 
-  class ChunkDataState < State
-    def initialize(parser, data, chunk_data)
-      super(parser, data)
-      @chunk_data = chunk_data
-      @lines = []
+    all_ranges = chunk_header[:from_ranges].push(chunk_header[:to_range])
+
+    done_lines = Array.new(all_ranges.length, nil)
+    max_lines = all_ranges.map { |r| r.last }
+
+    # If there's an empty range, then we don't expect to see any lines
+    # in that source, so set max_lines to nil in that column
+    max_lines.each_index do |i|
+      max_lines[i] = nil if all_ranges[i].last < all_ranges[i].first
     end
 
-    def parse
-      from_lines = @chunk_data[:from_file_ranges].map {|r| r.first}
-      to_line = @chunk_data[:to_file_range].first
+    debug("Looking for max_lines: " + max_lines.join("|"))
 
-      all_ranges = @chunk_data[:from_file_ranges].push(@chunk_data[:to_file_range])
+    lines = []
 
-      done_lines = Array.new(all_ranges.length, nil)
-      max_lines = all_ranges.map { |r| r.last }
+    while done_lines != max_lines
+      line = get_next_line
+      debug("Parsing line: #{line}")
 
-      # If there's an empty range, then we don't expect to see any lines
-      # in that source, so set max_lines to nil in that column
-      max_lines.each_index do |i|
-        max_lines[i] = nil if all_ranges[i].last < all_ranges[i].first
+      # We don't really care about parsing this, so skip the line
+      next if (line == '\ No newline at end of file')
+
+      # Get the '+', ' ', and '-' flags from the beginning of the line
+      # There is one for each "input" file
+      diff_status = line[0.. from_lines.length - 1].split("")
+
+      has_plusses = ! diff_status.select { |x| x == '+' }.empty?
+      has_minuses = ! diff_status.select { |x| x == '-' }.empty?
+
+      # debug("+: #{has_plusses.inspect}  -: #{has_minuses.inspect}")
+
+      if has_plusses and has_minuses
+        except("Shouldn't have both plusses and minuses on a diff body line!")
       end
-      
 
-      parser.debug("Looking for max_lines: " + max_lines.join("|"))
+      # If there's a + in any of the columns, or all the flags are ' ', then
+      # it appears in the destination file
+      line_appears_in_dst = has_plusses || (! has_minuses)
+      # debug("appears in dst: #{line_appears_in_dst.inspect}")
 
-      while done_lines != max_lines
-        line = @parser.get_next_line
-        parser.debug("Parsing line: #{line}")
+      #TODO(todd) add more checking on lengths
 
-        # We don't really care about parsing this, so skip the line
-        next if (line == '\ No newline at end of file')
+      line_numbers = []
 
-        # Get the '+', ' ', and '-' flags from the beginning of the line
-        # There is one for each "input" file
-        diff_status = line[0.. from_lines.length - 1].split("")
+      diff_status.each_index do |i|
+        if (diff_status[i] == '-') ||
+          ((diff_status[i] == ' ') && line_appears_in_dst)
+          line_numbers << from_lines[i]
+          done_lines[i] = from_lines[i]
 
-        has_plusses = ! diff_status.select { |x| x == '+' }.empty?
-        has_minuses = ! diff_status.select { |x| x == '-' }.empty?
-
-#        parser.debug("+: #{has_plusses.inspect}  -: #{has_minuses.inspect}")
-
-        if has_plusses and has_minuses
-          parser.except("Shouldn't have both plusses and minuses on a diff body line!")
-        end
-
-        # If there's a + in any of the columns, or all the flags are ' ', then
-        # it appears in the destination file
-        line_appears_in_dst = has_plusses || (! has_minuses)
-#        parser.debug("appears in dst: #{line_appears_in_dst.inspect}")
-
-        #TODO(todd) add more checking on lengths
-
-        line_numbers = []
-
-        diff_status.each_index do |i|
-          if (diff_status[i] == '-') ||
-              ((diff_status[i] == ' ') && line_appears_in_dst)
-            line_numbers << from_lines[i]
-            done_lines[i] = from_lines[i]
-
-            from_lines[i] += 1
-          else
-            line_numbers << nil
-          end
-        end
-
-        # Take care of the line number for the "destination" file
-        if line_appears_in_dst
-          line_numbers << to_line
-          done_lines[-1] = to_line
-
-          to_line += 1
+          from_lines[i] += 1
         else
           line_numbers << nil
         end
-
-        @lines << Diff::DiffLine.new(line_numbers, line[from_lines.length .. line.length])
-
-        parser.debug("line numbers: " + line_numbers.map { |x| x.inspect }.join("|"));
       end
 
-      parser.debug("Done parsing chunk")
-      
-      # Figure out the blobs involved
-      index_header = @data[:extended_headers].select { |x| x[0] == 'index' }.first
+      # Take care of the line number for the "destination" file
+      if line_appears_in_dst
+        line_numbers << to_line
+        done_lines[-1] = to_line
 
-      if index_header.nil? || index_header.length != 2
-        parser.except("No index header found for chunk")
-      end
-
-      index_info = index_header[1]
-      blobs = index_info[:src_blobs].concat([index_info[:dst_blob]])
-      parser.debug('blobs: ' + blobs.inspect)
-
-
-      # Create the cunk
-      chunk = Diff::Chunk.new(@data[:src_files], @data[:dst_file], blobs, @lines)
-
-      @data[:chunks] = [] if @data[:chunks].nil?
-      @data[:chunks] << chunk
-
-
-      if ! parser.more_lines?
-        # End of diff file
-
-        return ParseCompleteState.new(Diff.new(@data[:chunks]))
-      end
-
-      peek = parser.peek_next_line
-      
-      if peek =~ /^\@\@/
-        return ChunkStartState.new(parser, data)
+        to_line += 1
       else
-        # We don't really care about parsing this, so skip the line
-        if (peek == '\ No newline at end of file')
-          parser.get_next_line
-        end
-        return DiffLineState.new(parser, data)
+        line_numbers << nil
       end
 
-    end
-  end # ChunkDataState
+      # We don't really care about parsing this, so skip the line
+      get_next_line if peek_next_line == '\ No newline at end of file'
 
-  class ParseCompleteState < State
-    attr_accessor :diff;
-    def initialize(diff)
-      @diff = diff
+      lines << Diff::DiffLine.new(line_numbers, line[from_lines.length .. line.length])
+      debug("line numbers: " + line_numbers.map { |x| x.inspect }.join("|"));
     end
 
-    def done?
-      return true
-    end
+    return lines
   end
 
+
+  def parse_chunk
+    chunk_header = parse_chunk_header
+    chunk_lines = parse_chunk_lines(chunk_header)
+    return Diff::Chunk.new(chunk_lines)
+  end
+
+
+  def parse_chunks
+    chunks = []
+    while has_more_lines? && match_chunk_header(peek_next_line) do
+      chunks << parse_chunk
+    end
+    return chunks
+  end
+
+
+  def parse_file_change_set
+    diff_line = parse_diff_line
+    extended_headers = parse_extended_headers
+    files = parse_file_lines
+    chunks = parse_chunks
+
+    # Figure out the blobs involved
+    index_header = extended_headers.select { |x| x[0] == 'index' }.first
+
+    if index_header.nil? || index_header.length != 2
+      except("No index header found for chunk")
+    end
+
+    index_info = index_header[1]
+    blobs = index_info[:src_blobs].concat([index_info[:dst_blob]])
+    debug('blobs: ' + blobs.inspect)
+
+    return Diff::FileChangeSet.new(files[:src_files],
+                                   files[:dst_file],
+                                   blobs,
+                                   chunks);
+  end
 end

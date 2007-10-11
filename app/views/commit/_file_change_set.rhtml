@@ -1,0 +1,17 @@
+<div class="file_change_set">
+  <table class="file_change_set_header">
+    <tr>
+      <td class="header">Src file:</td>
+      <td><%=h file_change_set.src_files.join(", ") %></td>
+    </tr>
+    <tr>
+      <td class="header">Dst file:</td>
+      <td><%=h file_change_set.dst_file %></td>
+    </tr>
+  </table>
+
+  <% file_change_set.chunks.each do |chunk| %>
+    <%= render_partial 'chunk', chunk %>
+  <% end %>
+
+</div>

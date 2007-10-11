@@ -32,17 +32,22 @@ class GitDiffParserTest < Test::Unit::TestCase
     diff = do_test_diff('simple.diff')
     assert !diff.nil?
 
-    assert_equal(1, diff.chunks.length)
+    assert_equal(1, diff.file_change_sets.length)
+    
+    fcs = diff.file_change_sets[0]
+    assert_equal(1, fcs.chunks.length)
 
-    chunk = diff.chunks[0]
-    assert_not_nil(chunk)
-
-    assert_equal(["a/AsqlShard.java"], chunk.src_files)
-    assert_equal("b/AsqlShard.java", chunk.dst_file)
+    assert_equal(["a/AsqlShard.java"], fcs.src_files)
+    assert_equal("b/AsqlShard.java", fcs.dst_file)
 
     assert_equal(['ef696de6b68ac5094295fb7aa19dd6c5411f1886',
                    '8e996ec0ceac0ac1477c7d9d508df8e49e185d24'],
-                 chunk.blobs);
+                 fcs.blobs);
+
+
+    chunk = fcs.chunks[0]
+    assert_not_nil(chunk)
+
 
     lines = chunk.lines
     assert_equal(7, lines.length)
@@ -68,16 +73,18 @@ class GitDiffParserTest < Test::Unit::TestCase
     diff = do_test_diff('multi_file.diff')
     assert !diff.nil?
 
-    assert_equal(3, diff.chunks.length)
+    assert_equal(3, diff.file_change_sets.length)
 
-    assert_equal("b/AsqlShard.java", diff.chunks[0].dst_file)
-    assert_equal("b/initial", diff.chunks[1].dst_file)
-    assert_equal("b/newfile", diff.chunks[2].dst_file)
+    assert_equal("b/AsqlShard.java", diff.file_change_sets[0].dst_file)
+    assert_equal("b/initial", diff.file_change_sets[1].dst_file)
+    assert_equal("b/newfile", diff.file_change_sets[2].dst_file)
 
-    # Test chunk 2 (idx 1) -- subtracts lines at end of chunk
+    # Test fcs 2 (idx 1) -- subtracts lines at end of chunk
 
-    chunk = diff.chunks[1]
+    fcs = diff.file_change_sets[1]
+    assert_equal(1, fcs.chunks.length)
 
+    chunk = fcs.chunks[0]
     assert_equal(5, chunk.lines.length)
 
     expected_lines = [
@@ -90,7 +97,10 @@ class GitDiffParserTest < Test::Unit::TestCase
 
     # Test chunk 3 (idx 2) -- adds lines at end of chunk
 
-    chunk = diff.chunks[2]
+    fcs = diff.file_change_sets[2]
+    assert_equal(1, fcs.chunks.length)
+
+    chunk = fcs.chunks[0]
     assert_equal(4, chunk.lines.length)
     expected_lines = [
       [1, 1],
@@ -104,14 +114,19 @@ class GitDiffParserTest < Test::Unit::TestCase
     diff = do_test_diff('merge.diff')
     assert !diff.nil?
 
-    assert_equal(1, diff.chunks.length)
+    assert_equal(1, diff.file_change_sets.length)
+    
+    fcs = diff.file_change_sets.first
 
-    chunk = diff.chunks[0]
 
     assert_equal(['2e7199ed8dbbe95d4df8fe0a22ec4035ae5dc6dc',
                    '97c30c3a5364561b123fc159f19329c580fa53e5',
                    'c69a2a5082a7aeb124de612c2f56a183f2bef01d'],
-                 chunk.blobs)
+                 fcs.blobs)
+
+
+    assert_equal(1, fcs.chunks.length)
+    chunk = fcs.chunks.first
 
     assert_equal(9, chunk.lines.length)
 
