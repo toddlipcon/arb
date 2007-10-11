@@ -28,7 +28,7 @@ table.diff_header{
   margin: 1em;
 }
 
-.diff_chunk .chunk_header { 
+.file_change_set .file_change_set_header { 
   margin-bottom: 1em;
   margin-left: 1em;
   background: #ccc;  
@@ -36,7 +36,7 @@ table.diff_header{
   padding: 0.5em;
 }
 
-.diff_chunk .chunk_header .header { font-weight: bold; }
+.file_change_set .file_change_set_header .header { font-weight: bold; }
 
 .diff_line .inserted { 
   background: #afa;
