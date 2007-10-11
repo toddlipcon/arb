@@ -1,0 +1,155 @@
+diff --git a/app/controllers/commit_controller.rb b/app/controllers/commit_controller.rb
+index fb2eb1e..43a835b 100644
+--- a/app/controllers/commit_controller.rb
++++ b/app/controllers/commit_controller.rb
+@@ -6,4 +6,8 @@ class CommitController < ApplicationController
+ 
+     @diff = @commit.diff
+   end
++
++  def show
++    @commit = Commit.new(:sha1 => params[:sha1])
++  end
+ end
+diff --git a/app/views/commit/diff.rhtml b/app/views/commit/_chunk.rhtml
+similarity index 80%
+copy from app/views/commit/diff.rhtml
+copy to app/views/commit/_chunk.rhtml
+index 79daa75..9291028 100644
+--- a/app/views/commit/diff.rhtml
++++ b/app/views/commit/_chunk.rhtml
+@@ -1,16 +1,12 @@
+-Diff is <%= @diff.inspect %>
+-
+-<% @diff.chunks.each do |chunk| %>
+-
+-
++<div class="diff_chunk">
+   <% # Chunk header %>
+-  <table>
++  <table class="chunk_header">
+     <tr>
+-      <td>Src file:</td>
++      <td class="header">Src file:</td>
+       <td><%=h chunk.src_files.join(", ") %></td>
+     </tr>
+     <tr>
+-      <td>Dst file:</td>
++      <td class="header">Dst file:</td>
+       <td><%=h chunk.dst_file %></td>
+     </tr>
+   </table>
+@@ -36,9 +32,4 @@ Diff is <%= @diff.inspect %>
+   <% end %>
+ 
+   </table>
+-
+-  Chunk: <%= chunk %>
+-
+-
+-
+-<% end %>
++</div>
+\ No newline at end of file
+diff --git a/app/views/commit/diff.rhtml b/app/views/commit/diff.rhtml
+index 79daa75..7b71813 100644
+--- a/app/views/commit/diff.rhtml
++++ b/app/views/commit/diff.rhtml
+@@ -1,44 +1,3 @@
+-Diff is <%= @diff.inspect %>
+-
+ <% @diff.chunks.each do |chunk| %>
+-
+-
+-  <% # Chunk header %>
+-  <table>
+-    <tr>
+-      <td>Src file:</td>
+-      <td><%=h chunk.src_files.join(", ") %></td>
+-    </tr>
+-    <tr>
+-      <td>Dst file:</td>
+-      <td><%=h chunk.dst_file %></td>
+-    </tr>
+-  </table>
+-
+-  <table border="1" cellspacing="0" cellpadding="0">
+-
+-  <% # iterate over lines %>
+-  <% chunk.lines.each do |line| %>
+-    <tr class="diff_line">
+-    <% # Line numbers %>
+-      <% line.line_numbers.each do |n| %>
+-        <td class="line_number"><%=h n.nil? ? "-" : n %></td>
+-      <% end %>
+-
+-      <td class="<%= (line_classes line).join(" ") %>">
+-        <% if line.line.empty? %>
+-          &nbsp;
+-        <% else %>
+-          <pre><%=h line.line %></pre>
+-        <% end %>
+-      </td>
+-    </tr>
+-  <% end %>
+-
+-  </table>
+-
+-  Chunk: <%= chunk %>
+-
+-
+-
++  <%= render_partial 'chunk', chunk %>
+ <% end %>
+diff --git a/app/views/commit/show.rhtml b/app/views/commit/show.rhtml
+index 3994de0..3ca9b89 100644
+--- a/app/views/commit/show.rhtml
++++ b/app/views/commit/show.rhtml
+@@ -1,6 +1,4 @@
+-<%=h @commit.parse_info.inspect %>
+-
+-<table>
++<table class="diff_header">
+   <tr>
+     <td>SHA1:</td>
+     <td><%=h @commit.sha1 %></td>
+@@ -17,4 +15,8 @@
+     <td>Log message:</td>
+     <td><pre><%=h @commit.log_message %></pre></td>
+   </tr>
+-</table>
+\ No newline at end of file
++</table>
++
++<% @commit.diff.chunks.each do |chunk| %>
++  <%= render_partial 'chunk', chunk %>
++<% end %>
+diff --git a/public/stylesheets/arb.css b/public/stylesheets/arb.css
+index 031fd4b..3e9eac7 100644
+--- a/public/stylesheets/arb.css
++++ b/public/stylesheets/arb.css
+@@ -19,6 +19,24 @@ pre {
+   vertical-align: baseline;
+ }
+ 
++table.diff_header{
++  border: solid 1px #000;
++  margin: 2em;
++}
++
++.diff_chunk { 
++  margin: 1em;
++}
++
++.diff_chunk .chunk_header { 
++  margin-bottom: 1em;
++  margin-left: 1em;
++  background: #ccc;  
++  border: 1px solid #000;
++  padding: 0.5em;
++}
++
++.diff_chunk .chunk_header .header { font-weight: bold; }
+ 
+ .diff_line .inserted { 
+   background: #afa;

@@ -274,8 +274,10 @@ Reads lines of the type:
 
       while done_lines != max_lines
         line = @parser.get_next_line
-
         parser.debug("Parsing line: #{line}")
+
+        # We don't really care about parsing this, so skip the line
+        next if (line == '\ No newline at end of file')
 
         # Get the '+', ' ', and '-' flags from the beginning of the line
         # There is one for each "input" file
@@ -358,6 +360,10 @@ Reads lines of the type:
       if peek =~ /^\@\@/
         return ChunkStartState.new(parser, data)
       else
+        # We don't really care about parsing this, so skip the line
+        if (peek == '\ No newline at end of file')
+          parser.get_next_line
+        end
         return DiffLineState.new(parser, data)
       end
 
