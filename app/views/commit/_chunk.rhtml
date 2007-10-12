@@ -1,5 +1,5 @@
 <div class="diff_chunk">
-  <table border="1" cellspacing="0" cellpadding="0">
+  <table cellspacing="0" cellpadding="0">
 
   <% # iterate over lines %>
   <% chunk.lines.each do |line| %>
@@ -13,7 +13,7 @@
         <% if line.line.empty? %>
           &nbsp;
         <% else %>
-          <pre><%=h line.line %></pre>
+          <code><%=h line.line %></code>
         <% end %>
       </td>
     </tr>
