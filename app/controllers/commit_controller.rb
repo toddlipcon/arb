@@ -1,13 +1,24 @@
 class CommitController < ApplicationController
   helper :diff
 
-  def diff
-    @commit = Commit.new(:sha1 => params[:sha1])
+  before_filter :get_commit
 
+  def get_commit
+    @commit = Commit.by_sha1(params[:sha1])
+  end
+
+  def diff
     @diff = @commit.diff
   end
 
   def show
-    @commit = Commit.new(:sha1 => params[:sha1])
+  end
+
+  def json
+    render :json => @commit
+  end
+
+  def approved
+    render :json => @commit.approved?
   end
 end
