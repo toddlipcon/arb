@@ -34,6 +34,14 @@ class Diff
       @binary = ! files[:binary].nil?
     end
 
+    def new_file?
+      @extended_headers.has_key?('new file')
+    end
+
+    def deleted_file?
+      @extended_headers.has_key?('deleted file')
+    end
+
     alias_method :binary?, :binary
   end
 
