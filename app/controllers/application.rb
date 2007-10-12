@@ -2,15 +2,15 @@
 # Likewise, all the methods added will be available for all controllers.
 class ApplicationController < ActionController::Base
 
-  def render(args)
-    if args[:json]
+  def render(args = {})
+    if ! args[:json].nil?
       @headers['Content-Type'] = 'text/javascript'
       
       obj = args.delete(:json)
       args[:text] = obj.to_json
       super(args)
     else
-      super(*args)
+      super(args)
     end
   end
 
