@@ -2,13 +2,24 @@
 # migrations feature of ActiveRecord to incrementally modify your database, and
 # then regenerate this schema definition.
 
-ActiveRecord::Schema.define(:version => 2) do
+ActiveRecord::Schema.define(:version => 3) do
 
   create_table "commits", :force => true do |t|
     t.column "sha1", :string, :limit => 40
     t.column "approved_by", :string
     t.column "approved_on", :datetime
+    t.column "project_id", :integer
   end
+
+  add_index "commits", ["project_id"], :name => "commits_project_id_index"
+
+  create_table "projects", :force => true do |t|
+    t.column "name", :string, :limit => 40
+    t.column "main_repository", :string
+    t.column "review_repository", :string
+  end
+
+  add_index "projects", ["name"], :name => "projects_name_index"
 
   create_table "reviews", :force => true do |t|
     t.column "repository", :string

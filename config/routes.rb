@@ -18,11 +18,16 @@ ActionController::Routing::Routes.draw do |map|
   map.connect ':controller/service.wsdl',
     :action => 'wsdl'
 
+  map.show 'project/:project/commit/sha1/:sha1/:action',
+    :controller => 'commit',
+    :action => 'show',
+    :project => /\w+/
+
   map.connect 'commit/sha1/:sha1/:action',
     :controller => 'commit',
     :action     => 'show'
 
- map.connect 'commit/id/:id/:action',
+  map.connect 'commit/id/:id/:action',
     :controller => 'commit'
 
   # Install the default route as the lowest priority.

@@ -4,7 +4,10 @@ class CommitController < ApplicationController
   before_filter :get_commit
 
   def get_commit
-    @commit = Commit.by_sha1(params[:sha1])
+    @project = Project.find(:first, :conditions => [ 'name = ?', params[:project] ])
+    puts "Project is #{@project.inspect}"
+    @commit = Commit.by_sha1(:sha1 => params[:sha1],
+                             :project => @project)
   end
 
   def diff
@@ -21,4 +24,5 @@ class CommitController < ApplicationController
   def approved
     render :json => @commit.approved?
   end
+
 end
