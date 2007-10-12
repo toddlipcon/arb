@@ -4,7 +4,7 @@ class GitDiffParserTest < Test::Unit::TestCase
 
   TestDiffs = ['simple.diff', 'multi_file.diff', 'merge.diff',
     'long.diff', 'rename.diff', 'no_newline.diff', 'binary_files.diff',
-    'empty_file.diff']
+    'empty_file.diff', 'dodecapus.diff']
 
   def setup
     @done_diffs = Hash.new
