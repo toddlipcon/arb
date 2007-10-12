@@ -9,7 +9,7 @@ class Commit < ActiveRecord::Base
   end
 
   def repository_dir
-    "/home/todd/arb/arb"
+    "/files/git/repos/review/arb"
   end
 
   def in_repo
