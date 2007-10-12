@@ -2,10 +2,7 @@ class Commit < ActiveRecord::Base
   validates_format_of :sha1, :with => /^[a-z0-9]+$/
   validates_length_of :sha1, :is => 40
 
-  belongs_to :project
-  validates_presence_of :project
-
-  attr_reader :repository
+  belongs_to :review
 
   def self.default_project
     Project.find(:first, :conditions => [ 'name = ?', "test" ])
@@ -35,6 +32,10 @@ class Commit < ActiveRecord::Base
     if ! self.valid?
       throw Exception.new("Cannot operate on invalid commit: #{self.inspect}")
     end
+  end
+
+  def project
+    review.project
   end
 
   def review_repository_dir
