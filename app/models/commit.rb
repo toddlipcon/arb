@@ -9,7 +9,10 @@ class Commit < ActiveRecord::Base
 
     return db_commit unless db_commit.nil?
 
-    self.new(:sha1 => sha1)
+    commit = self.new(:sha1 => sha1)
+
+    commit.sha1 = commit.git_get_full_revision if commit.exists_in_repository?
+    commit
   end
 
   def check_valid
@@ -45,7 +48,7 @@ class Commit < ActiveRecord::Base
   def git_get_full_revision
     in_repo do
       rev = `git-rev-list -n 1 #{self.sha1} || echo -n FAILURE`
-      return (rev != 'FAILURE') ? rev : nil
+      return (rev != 'FAILURE') ? rev.chomp : nil
     end
   end
 
