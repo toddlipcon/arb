@@ -223,7 +223,7 @@ Match the header at the top of a chunk that looks like:
 
 =end
   def match_chunk_header(line)
-    return line.match(/^\@{2,} ((?:[\-\+]\d+,\d+ )+)\@{2,}/);
+    return line.match(/^\@{2,} ((?:[\-\+]\d+(?:,\d+)? )+)\@{2,}/);
   end
 
   def parse_chunk_header
@@ -234,6 +234,8 @@ Match the header at the top of a chunk that looks like:
 
     ranges = match[1].split(' ').map do |s|
       (start, len) = s[1,s.length].split(/,/).map { |x| x.to_i }
+
+      len = 1 if (len.nil?)
 
       [s[0], Range.new(start, start+len - 1)]
     end
