@@ -5,26 +5,37 @@ class Commit < ActiveRecord::Base
   belongs_to :review
 
   def self.default_project
-    Project.find(:first, :conditions => [ 'name = ?', "test" ])
+    Project.by_name("test")
   end
 
   def self.by_sha1(args)
-    args = {
-      :project => self.default_project
-    }.merge(args)
+    unless args.include?(:project)
+      if args.include?(:project_id)
+        args[:project] = Project.find(args[:project_id])
+        raise "bad project id" if args[:project].nil?
+      else
+        args[:project] = default_project
+      end
+    end
 
-    db_commit = find(:first,
-                     :conditions => [
-                       'project_id = ? AND ' +
-                       'sha1 LIKE ?',
-                       args[:project],
-                       args[:sha1] + "%"])
+    db_commits = find_by_sql(["SELECT commits.* FROM commits " +
+      "JOIN reviews ON commits.review_id = reviews.id " +
+      "WHERE commits.sha1 LIKE ? AND reviews.project_id = ?",
+      args[:sha1] + '%', args[:project].id])
+
+    raise "ambiguous commit" if db_commits.length > 1
+
+    db_commit = db_commits.first
 
     return db_commit unless db_commit.nil?
 
-    commit = self.new(args)
-    puts commit.to_yaml
+    puts args.inspect
+    commit = self.new(:sha1 => args[:sha1])
+
+    commit.project = args[:project]
     commit.sha1 = commit.git_get_full_revision if commit.exists_in_review_repository?
+
+    puts "commit constructed: #{commit.to_json}"
     commit
   end
 
@@ -35,7 +46,19 @@ class Commit < ActiveRecord::Base
   end
 
   def project
-    review.project
+    unless review.nil?
+      review.project
+    else
+      @project
+    end
+  end
+
+  def project=(project)
+      unless review.nil?
+        raise "Cannot set project of the commit's owning review by commit mutator"
+      else
+        @project = project
+      end
   end
 
   def review_repository_dir
