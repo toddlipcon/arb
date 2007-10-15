@@ -43,5 +43,5 @@ ActionController::Routing::Routes.draw do |map|
     :controller => 'commit'
 
   # Install the default route as the lowest priority.
-  map.connect ':controller/:action/:id'
+  map.connect ':controller/:id/:action'
 end
