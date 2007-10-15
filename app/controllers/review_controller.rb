@@ -1,4 +1,5 @@
 class ReviewController < ApplicationController
+  helper :diff
 
   def new
     puts params.to_yaml
@@ -48,4 +49,9 @@ class ReviewController < ApplicationController
     end
   end
 
+
+  def show
+    @review = Review.find(params[:id])
+    raise "no such review" if @review.nil?
+  end
 end

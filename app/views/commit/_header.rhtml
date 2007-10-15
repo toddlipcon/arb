@@ -1,0 +1,19 @@
+<% commit = header %>
+ <table class="diff_header">
+  <tr>
+    <td>SHA1:</td>
+    <td><%=h commit.sha1 %></td>
+  </tr>
+  <tr>
+    <td>Author:</td>
+    <td><%=h commit.author %></td>
+  </tr>
+  <tr>
+    <td>Committer:</td>
+    <td><%=h commit.committer %></td>
+  </tr>
+  <tr>
+    <td>Log message:</td>
+    <td><pre><%=h commit.log_message %></pre></td>
+  </tr>
+</table>
