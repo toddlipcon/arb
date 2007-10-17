@@ -45,7 +45,7 @@
   </table>
 
   <% file_change_set.chunks.each do |chunk| %>
-    <%= render_partial 'commit/chunk', chunk %>
+    <%= render_partial 'commit/chunk', chunk, 'file_change_set' => file_change_set %>
   <% end %>
 
 </div>

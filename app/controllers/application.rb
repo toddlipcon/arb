@@ -6,8 +6,8 @@ class ApplicationController < ActionController::Base
 
   before_filter :authenticate
 
-  def render(args = {})
-    if ! args[:json].nil?
+  def render(args = nil)
+    if !args.nil? && args.kind_of?(Hash) && ! args[:json].nil?
       @headers['Content-Type'] = 'text/javascript'
       
       obj = args.delete(:json)

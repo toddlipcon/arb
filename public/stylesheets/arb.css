@@ -27,7 +27,8 @@ table.diff_header, table.review_header {
 
 .file_change_set .file_change_set_header .header,
 .review_header .header,
-.diff_header .header
+.diff_header .header,
+.comment .header
 {
   font-weight: bold;
   text-align: right;
@@ -68,3 +69,8 @@ table.diff_header, table.review_header {
 }
 
 .diff_line code { margin: 0 1em; }
+
+
+table.comment {
+  margin: 1em;
+}

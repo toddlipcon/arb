@@ -1,0 +1,21 @@
+<table style="margin: 1em; border: 1px solid #000; margin: 1em auto; background: #daa;">
+
+<% if ! @comment.errors.empty? %>
+  <tr><td>
+    <div style="border: 2px solid #000; margin: 1em; background: #ddd; padding: 1em;">
+      <%= error_messages_for :comment %>
+    </div>
+  </td></tr>
+<% end %>
+
+  <tr><td style="padding: 1em;">
+
+
+  <div style="margin-bottom: 1em;" >
+    Enter your comments about the above line of code:
+  </div>
+
+  <%= render_partial 'comment/new_form' %>
+
+  </tr></td>
+</table>

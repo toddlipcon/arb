@@ -23,6 +23,14 @@ ActionController::Routing::Routes.draw do |map|
     :action => 'show',
     :project => /\w+/
 
+  map.new 'comment/new',
+    :controller => 'comment',
+    :action => 'new'
+
+  map.create 'comment/create',
+    :controller => 'comment',
+    :action => 'create'
+
   map.new 'review/new/:json',
     :controller => 'review',
     :action => 'new',

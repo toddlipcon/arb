@@ -1,0 +1,52 @@
+@comment = Comment.new(params[:comment])
+
+line_id = @comment.index_hash + '_line_' + @comment.line_number.to_s
+inserted_id = line_id + '_inserted';
+below_table_id = line_id + '_after';
+
+page.select('#' + line_id + ' .comment_link a').each do |elem|
+  elem.hide()
+end
+
+page.assign :line_id, line_id
+page.assign :inserted_id, inserted_id
+page.assign :below_table_id, below_table_id
+
+
+page<< <<EOF
+
+line = $(line_id)
+
+table = null;
+elem = line;
+while (table == null && elem != null) {
+  if (elem.tagName == 'TABLE')
+    table = elem
+  elem = elem.parentNode;
+}
+
+// Insert a new table
+
+insertedNode = document.createElement('DIV');
+insertedNode.id = inserted_id;
+insertedNode.style.display = 'none';
+
+table.parentNode.insertBefore(insertedNode, table.nextSibling);
+
+newTable = document.createElement('TABLE');
+newTable.id = below_table_id;
+table.parentNode.insertBefore(newTable, insertedNode.nextSibling)
+
+elem = line.nextSibling
+while (elem != null) {
+  next = elem.nextSibling
+  if (elem.tagName == 'TR') {
+    elem.remove()
+    newTable.appendChild(elem);
+  }
+  elem = next
+}
+EOF
+
+page.replace_html inserted_id , :partial => 'new_comment_ajax_row'
+page.visual_effect :blind_down, inserted_id, :duration => 1

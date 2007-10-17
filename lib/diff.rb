@@ -49,7 +49,7 @@ class Diff
   # A set of line changes
   ##
   class Chunk
-    attr_accessor :lines
+    attr_reader :lines
 
     def initialize(lines)
       @lines = lines
@@ -78,6 +78,15 @@ class Diff
 
     def appears_in_output?
       ! @line_numbers.last.nil?
+    end
+
+    def best_file_index
+      last_non_nil_idx = line_numbers.map { |x| x.nil? }.rindex(false)
+      if last_non_nil_idx.nil?
+        raise "No non-nil lines in diff line: #{self.inspect}"
+      end
+
+      last_non_nil_idx
     end
   end
 
