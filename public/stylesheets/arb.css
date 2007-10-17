@@ -12,7 +12,7 @@ pre {
 }
 
 
-table.diff_header{
+table.diff_header, table.review_header {
   border: solid 1px #000;
   margin: 1em;
 }
@@ -25,7 +25,14 @@ table.diff_header{
   padding: 0.5em;
 }
 
-.file_change_set .file_change_set_header .header { font-weight: bold; }
+.file_change_set .file_change_set_header .header,
+.review_header .header,
+.diff_header .header
+{
+  font-weight: bold;
+  text-align: right;
+  padding-right: 10px;
+}
 
 .file_change_set .file_change_set_header .binary_files {
   background: #ff6;
