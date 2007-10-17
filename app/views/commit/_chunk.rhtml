@@ -33,6 +33,14 @@
          } %>
       </td>
     </tr>
+  <% comments = comments_for_line(blob, blob_line_number) %>
+  <% comments.each do |comment| %>
+    </table>
+      <%= render_partial 'comment/show', comment %>
+    <table>
+  <% end %>
+
+
   <% end %>
 
   </table>
