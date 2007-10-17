@@ -1,17 +1,19 @@
 <% comment = show %>
 
-<table class="comment">
-  <tr>
-    <td class="header">Comment by:</td>
-    <td><%=h comment.commenter %></td>
-  </tr>
-  <tr>
-    <td class="header">On:</td>
-    <td><%=h comment.written_on %></td>
-  </tr>
-  <tr>
-    <td class="content" colspan="2">
-      <%=h comment.content %>
-    </td>
-  </tr>
-</table>
+<div class="comment">
+  <table>
+    <tr>
+      <td class="header">Comment by:</td>
+      <td><%=h comment.commenter %></td>
+    </tr>
+    <tr>
+      <td class="header">On:</td>
+      <td><%=h comment.written_on %></td>
+    </tr>
+    <tr>
+      <td class="content" colspan="2">
+        <%=h comment.content %>
+      </td>
+    </tr>
+  </table>
+</div>

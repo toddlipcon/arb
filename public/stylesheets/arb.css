@@ -71,6 +71,10 @@ table.diff_header, table.review_header {
 .diff_line code { margin: 0 1em; }
 
 
-table.comment {
+div.comment {  margin: 1em;}
+
+.comment table {
+  border: 10px solid #66f;
+  background: #fff;
   margin: 1em;
 }
