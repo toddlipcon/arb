@@ -1,3 +1,5 @@
+require 'pam'
+
 # Filters added to this controller will be run for all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 class ApplicationController < ActionController::Base
@@ -57,6 +59,43 @@ class ApplicationController < ActionController::Base
 
 
   def authorize(username, password)
-    return username == 'todd'
+    return false if username.nil?
+
+    conv_data = username
+
+    pam_conv = proc do |msgs, data|
+      ret = []
+
+      msgs.each do |msg|
+        case msg.msg_style
+        when PAM::PAM_PROMPT_ECHO_ON
+          ret.push(PAM::Response.new(username, 0))
+        when PAM::PAM_PROMPT_ECHO_OFF
+          ret.push(PAM::Response.new(password, 0))
+        else
+          ret.push(PAM::Response.new(nil, 0))
+        end
+      end
+
+      ret
+
+    end
+
+    PAM.start('arb', username, pam_conv, conv_data) do |pam|
+      begin
+        pam.authenticate(0)
+      rescue
+        return false
+      end
+      
+      begin
+        pam.acct_mgmt(0)
+        pam.open_session {}
+      rescue PAM::PAMError
+        return false
+      end
+    end
+
+    return true
   end
 end
