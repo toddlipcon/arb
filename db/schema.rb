@@ -2,7 +2,13 @@
 # migrations feature of ActiveRecord to incrementally modify your database, and
 # then regenerate this schema definition.
 
-ActiveRecord::Schema.define(:version => 6) do
+ActiveRecord::Schema.define(:version => 7) do
+
+  create_table "approvals", :force => true do |t|
+    t.column "commit_id", :integer, :default => 0, :null => false
+    t.column "approved_by", :string, :default => "", :null => false
+    t.column "approved_on", :datetime, :null => false
+  end
 
   create_table "comments", :force => true do |t|
     t.column "review_id", :integer
@@ -16,8 +22,6 @@ ActiveRecord::Schema.define(:version => 6) do
 
   create_table "commits", :force => true do |t|
     t.column "sha1", :string, :limit => 40
-    t.column "approved_by", :string
-    t.column "approved_on", :datetime
     t.column "review_id", :integer
   end
 

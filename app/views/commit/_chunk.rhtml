@@ -23,15 +23,17 @@
           <code><%=h line.line %></code><br/>
         <% end %>
       </td>
-      <td class="comment_link">
-        <%= link_to_remote '+', :url => {
-              :controller => 'review',
-              :action => 'new_comment_ajax',
-              'comment[review_id]'   => @review.id,
-              'comment[index_hash]'  => blob,
-              'comment[line_number]' => blob_line_number
-         } %>
-      </td>
+      <% if ! @review.nil? %>
+        <td class="comment_link">
+          <%= link_to_remote '+', :url => {
+                :controller => 'review',
+                :action => 'new_comment_ajax',
+                'comment[review_id]'   => @review.id,
+                'comment[index_hash]'  => blob,
+                'comment[line_number]' => blob_line_number
+           } %>
+        </td>
+      <% end %>
     </tr>
   <% comments = comments_for_line(blob, blob_line_number) %>
   <% comments.each do |comment| %>

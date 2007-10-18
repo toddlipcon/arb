@@ -3,6 +3,8 @@ class Commit < ActiveRecord::Base
   validates_length_of :sha1, :is => 40
 
   belongs_to :review
+  has_many :approvals
+
 
   def self.default_project
     Project.by_name("test")
@@ -140,7 +142,7 @@ class Commit < ActiveRecord::Base
   end
 
   def approved?
-    return !new_record? && ! approved_by.nil?
+    return self.approvals.count != 0
   end
 
   def diff
