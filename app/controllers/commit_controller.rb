@@ -1,6 +1,6 @@
 class CommitController < ApplicationController
   helper :diff
-  helper :file_change_set
+  helper :chunk
 
   before_filter :get_commit
 
