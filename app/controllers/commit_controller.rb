@@ -2,6 +2,8 @@ class CommitController < ApplicationController
   helper :diff
   helper :chunk
 
+  before_filter :authenticate, :only => [:approve]
+
   before_filter :get_commit
 
   def get_commit
@@ -28,6 +30,23 @@ class CommitController < ApplicationController
 
   def changed
     render :json => @commit.changed_files
+  end
+
+  def approve
+    raise "no commit" if @commit.nil?
+    @approval = Approval.new(
+                            :commit => @commit,
+                            :approved_by => session[:username],
+                            :approved_on => Time.new()
+                               )
+
+    begin
+      @approval.save
+    rescue ActiveRecord::StatementInvalid
+      # Probably trying to approve something already approved
+      render :text => 'Cannot approve same commit twice' and return
+    end
+    render :text => 'Commit approved'
   end
 
 end
