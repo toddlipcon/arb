@@ -26,4 +26,8 @@ class CommitController < ApplicationController
     render :json => @commit.approved?
   end
 
+  def changed
+    render :json => @commit.changed_files
+  end
+
 end

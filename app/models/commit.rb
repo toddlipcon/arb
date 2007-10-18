@@ -118,6 +118,19 @@ class Commit < ActiveRecord::Base
     self.parse_info[:info][:committer]
   end
 
+  def changed_files
+    return nil unless exists_in_review_repository?
+    in_review_repository do
+      stat = `git diff #{self.sha1}^ #{self.sha1} --name-status`
+      return stat.map do |line|
+        match = line.chomp.match(/^(.)\s+(.+)$/)
+        change_type, file = match[1], match[2]
+
+        file
+      end
+    end
+  end
+
   def exists_in_review_repository?
     return @exists_in_review_repository unless @exists_in_review_repository.nil?
 
