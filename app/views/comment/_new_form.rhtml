@@ -1,0 +1,15 @@
+
+<% form_remote_for :comment, @comment,
+   :url => { :controller => 'comment', :action => 'create' } do |f| %>
+  <%= f.hidden_field 'line_number' %>
+  <%= f.hidden_field 'review_id' %>
+  <%= f.hidden_field 'index_hash' %>
+
+  <div>
+    <%= f.text_area('content', :cols => 80, :rows => 10) %>
+  </div>
+  <div style="text-align: right; margin-top: 1em;">
+    <input type="submit" value="Submit feedback"/>
+  </div>
+
+<% end %>

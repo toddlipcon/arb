@@ -1,0 +1,18 @@
+diff --git a/AsqlShard.java b/AsqlShard2.java
+similarity index 94%
+rename from AsqlShard.java
+rename to AsqlShard2.java
+index ef696de..82d065e 100644
+--- a/AsqlShard.java
++++ b/AsqlShard2.java
+@@ -21,7 +21,9 @@ public class AsqlShard {
+   public String getDsn() {
+     return _dsn;
+   }
+-  
++
++// insert in middle of big moved file
++//
+   public boolean equals(Object rhs) {
+     if (rhs instanceof AsqlShard) {
+       AsqlShard rshard = (AsqlShard)rhs;

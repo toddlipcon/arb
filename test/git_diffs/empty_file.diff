@@ -1,0 +1,16 @@
+diff --git a/emptyfile b/emptyfile
+new file mode 100644
+index 0000000..e69de29
+diff --git a/newfile b/newfile
+deleted file mode 100644
+index aa770c9..0000000
+--- a/newfile
++++ /dev/null
+@@ -1,4 +0,0 @@
+-I'm making a new file
+-and adding a line in review-3
+-
+-And adding a line
+diff --git a/emptyfile2 b/emptyfile2
+new file mode 100644
+index 0000000..e69213

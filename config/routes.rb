@@ -15,8 +15,41 @@ ActionController::Routing::Routes.draw do |map|
 
   # Allow downloading Web Service WSDL as a file with an extension
   # instead of a file named 'wsdl'
-  map.connect ':controller/service.wsdl', :action => 'wsdl'
+  map.connect ':controller/service.wsdl',
+    :action => 'wsdl'
+
+  map.show 'project/:project/commit/sha1/:sha1/:action',
+    :controller => 'commit',
+    :action => 'show',
+    :project => /\w+/
+
+  map.new 'comment/new',
+    :controller => 'comment',
+    :action => 'new'
+
+  map.create 'comment/create',
+    :controller => 'comment',
+    :action => 'create'
+
+  map.new 'review/new/:json',
+    :controller => 'review',
+    :action => 'new',
+    :json => /(?:json)?/,
+    :defaults => { :json => 0 }
+
+  map.add_commit 'review/:review_id/add/commit/sha1/:sha1/:json',
+    :controller => 'review',
+    :action => 'add_commit',
+    :json => /(?:json)?/,
+    :defaults => { :json => 0 }
+
+  map.connect 'commit/sha1/:sha1/:action',
+    :controller => 'commit',
+    :action     => 'show'
+
+  map.connect 'commit/id/:id/:action',
+    :controller => 'commit'
 
   # Install the default route as the lowest priority.
-  map.connect ':controller/:action/:id'
+  map.connect ':controller/:id/:action'
 end

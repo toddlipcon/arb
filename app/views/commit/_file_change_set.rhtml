@@ -1,0 +1,51 @@
+<div class="file_change_set">
+  <table class="file_change_set_header">
+
+    <% unless file_change_set.new_file? %>
+      <tr>
+        <td class="header">Src file:</td>
+        <td><%=h file_change_set.src_files.join(", ") %></td>
+      </tr>
+    <% else %>
+      <tr>
+        <td colspan="2">
+          <b>created with mode <%= file_change_set.extended_headers['new file'][:mode] %></b>
+        </td>
+      </tr>
+    <% end %>
+
+    <% unless file_change_set.deleted_file? %>
+      <tr>
+        <td class="header">Dst file:</td>
+        <td><%=h file_change_set.dst_file %></td>
+      </tr>
+    <% else %>
+      <tr>
+        <td colspan="2">
+          <b>deleted</b>
+        </td>
+      </tr>
+    <% end %>
+
+    <% if file_change_set.binary? %>
+      <tr>
+        <td class="binary_files" colspan="2">
+          Binary files differ
+        </td>
+      </tr>
+    <% end %>
+
+<% # Show extended headers %>
+    <% extended_headers_to_display(file_change_set).each do |key, val| %>
+      <tr>
+        <td class="header"><%= h key %></td>
+        <td><pre><%=h val.inspect %></pre></td>
+      </tr>
+    <% end %>
+  </table>
+
+  <% file_change_set.chunks.each do |chunk| %>
+    <%= render_partial 'commit/chunk', chunk, 'file_change_set' => file_change_set %>
+  <% end %>
+
+</div>

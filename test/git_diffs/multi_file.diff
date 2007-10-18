@@ -1,0 +1,33 @@
+diff --git a/AsqlShard.java b/AsqlShard.java
+index ef696de6b68ac5094295fb7aa19dd6c5411f1886..8e996ec0ceac0ac1477c7d9d508df8e49e185d24 100644
+--- a/AsqlShard.java
++++ b/AsqlShard.java
+@@ -1,5 +1,9 @@
+ package com.amiestreet.asql;
+ 
++
++/**
++ * Represents a shard
++ */
+ public class AsqlShard {
+ 
+   public AsqlShard(int id, String dsn) {
+diff --git a/initial b/initial
+index f74395c6c5c0434bebfbadb72f55c1d521fb3a1d..401fa1898de985ce0ef707d7b62760b40933b7e1 100644
+--- a/initial
++++ b/initial
+@@ -1,5 +1,3 @@
+ Making some change to the initial file
+ Another change
+ I made another change
+-
+-Adding a change
+diff --git a/newfile b/newfile
+index c8b09c8c8d36fb7a8567d049150c700834f4caa1..aa770c9521cea1e6d3a5b375727ae20cae4c37ea 100644
+--- a/newfile
++++ b/newfile
+@@ -1,2 +1,4 @@
+ I'm making a new file
+ and adding a line in review-3
++
++And adding a line

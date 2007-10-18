@@ -1,0 +1,27 @@
+commit 378d1ec955b6b56c99a91707fd1283cd1476de18
+tree 2176ed8f46b31b6b4a7a037e790c8ef9e5f764a7
+parent 860527c5b43b0987ccc3a9d3d42e5f3dbae14dd4
+parent e336bcf6507066cfc887be6f7c94c1cbdb718936
+author Todd Lipcon <todd@turbo.corp.amiestreet.com> 1191951070 -0400
+committer Todd Lipcon <todd@turbo.corp.amiestreet.com> 1191951070 -0400
+
+    Merge branch 'master' into b
+    
+    Conflicts:
+    
+    	AsqlShard.java
+
+diff --cc AsqlShard.java
+index 2e7199e,97c30c3..c69a2a5
+--- a/AsqlShard.java
++++ b/AsqlShard.java
+@@@ -2,7 -2,7 +2,7 @@@ package com.amiestreet.asql
+  
+  
+  /**
+-  * Represents a shard. It's okay
+ - * Represents a shard. It's great
+++ * Represents a shard. It's somewhere between OK to great
+   */
+  public class AsqlShard {
+  

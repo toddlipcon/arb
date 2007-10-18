@@ -1,0 +1,47 @@
+<div class="diff_chunk">
+  <table cellspacing="0" cellpadding="0">
+
+  <% # iterate over lines %>
+  <% chunk.lines.each do |line| %>
+
+    <%
+      best_idx = line.best_file_index
+      blob = file_change_set.blobs[best_idx]
+      blob_line_number = line.line_numbers[ best_idx ]
+      line_id = blob + '_line_' + blob_line_number.to_s
+     %>
+
+    <tr class="diff_line" id="<%= line_id %>">
+    <% # Line numbers %>
+      <% line.line_numbers.each do |n| %>
+        <td class="line_number"><%=h n.nil? ? "-" : n %></td>
+      <% end %>
+      <td class="<%= (line_classes line).join(" ") %>">
+        <% if line.line.empty? %>
+          &nbsp;
+        <% else %>
+          <code><%=h line.line %></code><br/>
+        <% end %>
+      </td>
+      <td class="comment_link">
+        <%= link_to_remote '+', :url => {
+              :controller => 'review',
+              :action => 'new_comment_ajax',
+              'comment[review_id]'   => @review.id,
+              'comment[index_hash]'  => blob,
+              'comment[line_number]' => blob_line_number
+         } %>
+      </td>
+    </tr>
+  <% comments = comments_for_line(blob, blob_line_number) %>
+  <% comments.each do |comment| %>
+    </table>
+      <%= render_partial 'comment/show', comment %>
+    <table>
+  <% end %>
+
+
+  <% end %>
+
+  </table>
+</div>

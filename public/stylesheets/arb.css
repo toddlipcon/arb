@@ -1,0 +1,80 @@
+pre,code,tt {
+  font: 1em 'andale mono', 'monotype.com', 'lucida console', monospace;
+  line-height: 1;
+  white-space: pre;
+}
+
+pre {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+}
+
+
+table.diff_header, table.review_header {
+  border: solid 1px #000;
+  margin: 1em;
+}
+
+.file_change_set .file_change_set_header { 
+  margin-top: 1em;
+  margin-left: 1.5em;
+  background: #ccc;  
+  border: 1px solid #000;
+  padding: 0.5em;
+}
+
+.file_change_set .file_change_set_header .header,
+.review_header .header,
+.diff_header .header,
+.comment .header
+{
+  font-weight: bold;
+  text-align: right;
+  padding-right: 10px;
+}
+
+.file_change_set .file_change_set_header .binary_files {
+  background: #ff6;
+  border: 1px solid #000;
+  font-weight: bold;
+}
+
+.diff_chunk { 
+  margin: 10px 2em;
+}
+
+.diff_chunk table { 
+  border: 0;
+  border-collapse: collapse;
+}
+
+.diff_chunk td { 
+  border: 1px solid #999;
+}
+
+.diff_line .inserted { 
+  background: #afa;
+}
+
+.diff_line .deleted {
+  background: #faa;
+}
+
+.diff_line .line_number {
+  background: #ffc;
+  color: #999;
+  text-align: center;
+}
+
+.diff_line code { margin: 0 1em; }
+
+
+div.comment {  margin: 1em;}
+
+.comment table {
+  border: 10px solid #66f;
+  background: #fff;
+  margin: 1em;
+}

@@ -1,0 +1,160 @@
+diff --cc Documentation/kernel-parameters.txt
+index 1cbcf65,a482fde,5dffcfe,5dffcfe,5dffcfe,2ad64ef,5dffcfe,5dffcfe,a482fde,5dffcfe,a482fde,a482fde..8437036
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@@@@@@@@@@@@ -712,17 -711,9 -703,9 -703,9 -703,9 -708,9 -703,9 -703,9 -711,9 -703,9 -711,9 -711,9 +717,17 @@@@@@@@@@@@@ running once the system is up
+            	load_ramdisk=	[RAM] List of ramdisks to load from floppy
+            			See Documentation/ramdisk.txt.
+            
+ -----------	lockd.udpport=	[NFS]
+ +++++++++++	lockd.nlm_grace_period=P  [NFS] Assign grace period.
+ +++++++++++			Format: <integer>
+ +++++++++++
+ +++++++++++	lockd.nlm_tcpport=N	[NFS] Assign TCP port.
+ +++++++++++			Format: <integer>
+  ++++++ +  
+ -      - --	lockd.tcpport=	[NFS]
+ +++++++++++	lockd.nlm_timeout=T	[NFS] Assign timeout value.
+ +++++++++++			Format: <integer>
+ +      + ++
+  ------ -  	lockd.tcpport=	[NFS]
+ +++++++++++	lockd.nlm_udpport=M	[NFS] Assign UDP port.
+ +++++++++++			Format: <integer>
+            
+            	logibm.irq=	[HW,MOUSE] Logitech Bus Mouse Driver
+            			Format: <irq>
+diff --cc arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+index 7975e79,871366b,871366b,871366b,871366b,871366b,8a5e159,871366b,871366b,871366b,871366b,871366b..3852d0a
+--- a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@@@@@@@@@@@@ -365,16 -367,15 -367,15 -367,15 -367,15 -367,15 -305,8 -367,15 -367,15 -367,15 -367,15 -367,15 +303,9 @@@@@@@@@@@@@ acpi_cpufreq_cpu_init 
+            	unsigned int		cpu = policy->cpu;
+            	struct cpufreq_acpi_io	*data;
+            	unsigned int		result = 0;
+ ----- -----
+ ----- -----	union acpi_object		arg0 = {ACPI_TYPE_BUFFER};
+ ----- -----	u32				arg0_buf[3];
+ ----- -----	struct acpi_object_list 	arg_list = {1, &arg0};
+ +++++++++++	struct cpuinfo_x86 *c = &cpu_data[policy->cpu];
+            
+-           	union acpi_object		arg0 = {ACPI_TYPE_BUFFER};
+-           	u32				arg0_buf[3];
+-           	struct acpi_object_list 	arg_list = {1, &arg0};
+-           
+            	dprintk("acpi_cpufreq_cpu_init\n");
+------ -----	/* setup arg_list for _PDC settings */
+------ -----        arg0.buffer.length = 12;
+------ -----        arg0.buffer.pointer = (u8 *) arg0_buf;
+            
+            	data = kzalloc(sizeof(struct cpufreq_acpi_io), GFP_KERNEL);
+            	if (!data)
+diff --cc drivers/acpi/processor_idle.c
+index cc04933,552420e,5f51057,40c9f9c,807b0df,70d8a6e,1915c37,70d8a6e,807b0df,807b0df,807b0df,807b0df..be2dae5
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@@@@@@@@@@@@ -274,19 -309,19 -274,18 -278,18 -274,19 -278,8 -278,8 -278,8 -274,19 -274,19 -274,19 -274,19 +309,19 @@@@@@@@@@@@@ static void acpi_processor_idle(void
+            		}
+            	}
+            
+  --        	cx->usage++;
+  --        
+     +++    #ifdef CONFIG_HOTPLUG_CPU
+     +++    	/*
+     +++    	 * Check for P_LVL2_UP flag before entering C2 and above on
+     +++    	 * an SMP system. We do it here instead of doing it at _CST/P_LVL
+     +++    	 * detection phase, to work cleanly with logical CPU hotplug.
+     +++    	 */
+     +++    	if ((cx->type != ACPI_STATE_C1) && (num_online_cpus() > 1) && 
+  --        	    !pr->flags.has_cst && acpi_fadt.plvl2_up)
+  --        		cx->type = ACPI_STATE_C1;
+  ++ +++    	    !pr->flags.has_cst && !acpi_fadt.plvl2_up)
+  ++ +++    		cx = &pr->power.states[ACPI_STATE_C1];
+     +++    #endif
+  ++ +++    
+  ++        	cx->usage++;
+  ++        
+            	/*
+            	 * Sleep:
+            	 * ------
+@@@@@@@@@@@@@ -556,20 -591,20 -546,20 -536,14 -556,20 -528,11 -528,11 -528,11 -556,20 -556,20 -556,20 -556,20 +589,14 @@@@@@@@@@@@@ static int acpi_processor_get_power_inf
+--- --------	pr->power.states[ACPI_STATE_C1].type = ACPI_STATE_C1;
+            	pr->power.states[ACPI_STATE_C2].type = ACPI_STATE_C2;
+            	pr->power.states[ACPI_STATE_C3].type = ACPI_STATE_C3;
+            
+--- --------	/* the C0 state only exists as a filler in our array,
+--- --------	 * and all processors need to support C1 */
+--- --------	pr->power.states[ACPI_STATE_C0].valid = 1;
+--- --------	pr->power.states[ACPI_STATE_C1].valid = 1;
+--- -   ----
+     +++    #ifndef CONFIG_HOTPLUG_CPU
+     +++    	/*
+     +++    	 * Check for P_LVL2_UP flag before entering C2 and above on
+     +++    	 * an SMP system. 
+     +++    	 */
+  --        	if ((num_online_cpus() > 1) && acpi_fadt.plvl2_up)
+  ++ +++    	if ((num_online_cpus() > 1) && !acpi_fadt.plvl2_up)
+     +++    		return_VALUE(-ENODEV);
+     +++    #endif
+            
+            	/* determine C2 and C3 address from pblk */
+            	pr->power.states[ACPI_STATE_C2].address = pr->pblk + 4;
+@@@@@@@@@@@@@ -723,11 -758,11 -713,11 -702,11 -723,11 -686,11 -686,11 -686,11 -723,11 -723,11 -723,11 -723,11 +755,11 @@@@@@@@@@@@@ static int acpi_processor_get_power_inf
+            	}
+            
+            	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Found %d power states\n",
+--- --------			  pr->power.count));
++++ ++++++++			  current_count));
+            
+            	/* Validate number of power states discovered */
+--- --------	if (pr->power.count < 2)
+     ---    		status = -ENODEV;
++++ ++++++++	if (current_count < 2)
+     +++    		status = -EFAULT;
+            
+                  end:
+            	acpi_os_free(buffer.pointer);
+@@@@@@@@@@@@@ -892,12 -912,12 -867,12 -856,13 -877,12 -840,12 -840,12 -840,12 -877,12 -877,12 -877,12 -877,12 +924,13 @@@@@@@@@@@@@ static int acpi_processor_get_power_inf
+            	/* NOTE: the idle thread may not be running while calling
+            	 * this function */
+            
++++ ++++++++	/* Adding C1 state */
++++ ++++++++	acpi_processor_get_power_info_default_c1(pr);
+            	result = acpi_processor_get_power_info_cst(pr);
+     ---    	if ((result) || (acpi_processor_power_verify(pr) < 2)) {
+     ---    		result = acpi_processor_get_power_info_fadt(pr);
+     ---    		if ((result) || (acpi_processor_power_verify(pr) < 2))
+     ---    			result = acpi_processor_get_power_info_default_c1(pr);
+     ---    	}
+     +++    	if (result == -ENODEV)
+--- -   ----		result = acpi_processor_get_power_info_fadt(pr);
++++ ++++++++		acpi_processor_get_power_info_fadt(pr);
+     +++    
+--- -   ----	if ((result) || (acpi_processor_power_verify(pr) < 2))
+--- -   ----		result = acpi_processor_get_power_info_default_c1(pr);
++++ ++++++++	pr->power.count = acpi_processor_power_verify(pr);
+            
+            	/*
+            	 * Set Default Policy
+diff --cc kernel/power/disk.c
+index e24446f,e24446f,f2cd279,027322a,027322a,027322a,027322a,027322a,e24446f,027322a,e24446f,e24446f..e03d85e
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@@@@@@@@@@@@ -95,16 -95,16 -119,9 -119,16 -119,16 -119,16 -119,16 -119,16 -95,16 -119,16 -95,16 -95,16 +95,9 @@@@@@@@@@@@@ static int prepare_processes(void
+            		goto thaw;
+            	}
+            
+-- ---------	if (pm_disk_mode == PM_DISK_PLATFORM) {
+-- ---------		if (pm_ops && pm_ops->prepare) {
+-- ---------			if ((error = pm_ops->prepare(PM_SUSPEND_DISK)))
+-- ---------				goto thaw;
+-- ---------		}
+-- ---------	}
+-- ---------
+            	/* Free memory before shutting down devices. */
+  ------ -  	free_some_memory();
+  ------ -  	return 0;
+  ++++++ +  	if (!(error = swsusp_shrink_memory()))
+  ++++++ +  		return 0;
+            thaw:
+            	thaw_processes();
+            	enable_nonboot_cpus();

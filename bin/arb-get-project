@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::Bin/../perllib/";
+
+use Data::Dumper qw/Dumper/;
+
+use ARB;
+
+
+my $project = ARB::deduce_project();
+
+die "project not deducible" unless $project;
+print "$project\n";
+
+__END__
+
+=pod
+
+=head1 NAME
+
+arb-get-project - show current Amie Street review project for git repository
+
+
+=head1 SYNOPSIS
+
+Prints out on a single line the current git "project" your repository is
+hooked up to.
+
+This uses your remote urls for "review" and "main" in that order to try to
+determine it.
+
+=head1 AUTHOR
+
+Todd Lipcon, E<lt>todd@amiestreet.comE<gt>
+
+=cut

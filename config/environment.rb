@@ -39,7 +39,11 @@ Rails::Initializer.run do |config|
   # config.active_record.default_timezone = :utc
   
   # See Rails::Configuration for more options
+
 end
+
+# Mixins
+require 'activerecord_json.rb'
 
 # Add new inflection rules using the following format 
 # (all these examples are active by default):

@@ -1,0 +1,83 @@
+diff --git a/app/models/commit.rb b/app/models/commit.rb
+index 59953fb..7f9a375 100644
+--- a/app/models/commit.rb
++++ b/app/models/commit.rb
+@@ -28,7 +28,7 @@ class Commit < ActiveRecord::Base
+     check_valid
+ 
+     in_repo do
+-      return `git-show --pretty=raw -z #{self.sha1}`
++      return `git-show --pretty=raw #{self.sha1}`
+     end
+   end
+ 
+@@ -36,6 +36,19 @@ class Commit < ActiveRecord::Base
+     return @parsed_info unless @parsed_info.nil?
+ 
+     @parsed_info = GitCommitParser.new.parse(git_show_commit)
++    return @parsed_info
++  end
++
++  def log_message
++    self.parse_info[:log]
++  end
++
++  def author
++    self.parse_info[:info][:author]
++  end
++
++  def committer
++    self.parse_info[:info][:committer]
+   end
+ 
+   def diff
+diff --git a/app/views/commit/show.rhtml b/app/views/commit/show.rhtml
+new file mode 100644
+index 0000000..3994de0
+--- /dev/null
++++ b/app/views/commit/show.rhtml
+@@ -0,0 +1,20 @@
++<%=h @commit.parse_info.inspect %>
++
++<table>
++  <tr>
++    <td>SHA1:</td>
++    <td><%=h @commit.sha1 %></td>
++  </tr>
++  <tr>
++    <td>Author:</td>
++    <td><%=h @commit.author %></td>
++  </tr>
++  <tr>
++    <td>Committer:</td>
++    <td><%=h @commit.committer %></td>
++  </tr>
++  <tr>
++    <td>Log message:</td>
++    <td><pre><%=h @commit.log_message %></pre></td>
++  </tr>
++</table>
+\ No newline at end of file
+diff --git a/lib/git_commit_parser.rb b/lib/git_commit_parser.rb
+index 544c58a..a5c4d66 100644
+--- a/lib/git_commit_parser.rb
++++ b/lib/git_commit_parser.rb
+@@ -2,14 +2,12 @@ class GitCommitParser
+   include Reloadable
+ 
+   def parse(info)
+-    (info_section, log_and_diff) = info.split("\n\n", 2)
+-    (log, diff) = log_and_diff.split("\0")
++    (info_section, log, diff) = info.split("\n\n", 3)
+ 
+     # The log ends up indented 4 spaces
+ 
+     log.sub!(/^\s{4}?/, '')
+ 
+-
+     # Take a series of lines of the format:
+     # <key> <value with multiple words>
+     # and put it into a hash.
+diff --git a/test/git_commits/simple.commit b/test/git_commits/simple.commit
+index 9d5d5dc..ec8cf1e 100644
+Binary files a/test/git_commits/simple.commit and b/test/git_commits/simple.commit differ

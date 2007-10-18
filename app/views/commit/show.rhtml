@@ -1,0 +1,5 @@
+<%= render_partial 'header', @commit %>
+
+<% @commit.diff.file_change_sets.each do |fcs| %>
+  <%= render_partial 'file_change_set', fcs %>
+<% end %>

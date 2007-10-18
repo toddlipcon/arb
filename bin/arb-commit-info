@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::Bin/../perllib/";
+
+use Data::Dumper qw/Dumper/;
+
+use ARB;
+
+die "usage: $0 <sha1>" unless @ARGV == 1;
+
+my $sha1 = $ARGV[0];
+
+my $project = ARB::deduce_project || die "Couldn't deduce project";
+
+my $response = ARB::get_json_request("project/$project/commit/sha1/$sha1/json", {});
+
+print Dumper($response) . "\n";
