@@ -4,7 +4,7 @@ require 'pam'
 # Likewise, all the methods added will be available for all controllers.
 class ApplicationController < ActionController::Base
 
-  before_filter :authenticate
+#  before_filter :authenticate
 
   def render(args = nil)
     if !args.nil? && args.kind_of?(Hash) && ! args[:json].nil?
