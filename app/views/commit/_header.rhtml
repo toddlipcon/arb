@@ -16,4 +16,19 @@
     <td class="header">Log message:</td>
     <td><pre><%=h commit.log_message %></pre></td>
   </tr>
+
+  <% hash = commit.applicable_owners_files_hash %>
+
+  <tr>
+    <td colspan="2">
+      <b>Review status:</b>
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="2">
+      <%= review_status(commit) %>
+    </td>
+  </tr>
+
 </table>

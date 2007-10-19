@@ -164,6 +164,7 @@ class Commit < ActiveRecord::Base
   #    :path   => <the path to the OWNERS file>
   #    :blob   => <the blob hash of the most recent version of this in the
   #                  main repository>
+  #    :owners => <array of the owners listed in this file>
   # }
   #
   # Returns nil if there is no applicable OWNERS file.
@@ -194,8 +195,9 @@ class Commit < ActiveRecord::Base
       raise "bad blob" unless blob.length == 40
 
       return {
-        :path => tightest_owners,
-        :blob => blob
+        :path   => tightest_owners,
+        :blob   => blob,
+        :owners => read_owners_file(blob)
       }
     end
   end
@@ -214,16 +216,21 @@ class Commit < ActiveRecord::Base
   end
 
   ##
-  # Returns a hash where the keys are paths to OWNERS files and the values
-  # are the file names in this commit that are governed by that OWNERS
-  # file
+  # Returns a hash where the keys are hashes of the form returned by
+  # find_owners_file and the values are the file names in this commit
+  # that are governed by that OWNERS file
   ##
   def applicable_owners_files_hash
+
     # Make hash of (directory => [files in that directory in this commit]) pairs
 
-    affected_dirs_hash = changed_files.collect_to_reverse_hash do |file|
+    puts "changed files: #{changed_files.inspect}"
+
+    affected_dirs_hash = changed_files.collect_to_hash do |file|
       File.dirname(file)
     end
+
+    puts "affected_dirs_hash: #{affected_dirs_hash.inspect}"
 
     affected_dirs = affected_dirs_hash.keys
 
@@ -232,18 +239,26 @@ class Commit < ActiveRecord::Base
       owner = find_owners_file(dir)
       raise "No owner for dir #{dir}" if owner.nil?
 
-      path = owner[:path]
-
-      if (hash.include?(path))
-        hash[path] = hash[path] + affected_dirs_hash[dir]
+      if (hash.include?(owner))
+        hash[owner] = hash[owner] + affected_dirs_hash[dir]
       else
-        hash[path] = affected_dirs_hash[dir]
+        hash[owner] = affected_dirs_hash[dir]
       end
       hash
     end
+
+    # Stick the contents of the OWNERS files into the hash
+    
     
   end
 
+  def read_owners_file(blob)
+    `git-show "#{blob}"`.
+      gsub(/\#.*$/m, ''). # get rid of comments
+      strip. # trim
+      split("\n").
+      reject {|s| s == ''} # get rid of blank lines
+  end
 
   ##
   # Returns the contents of the OWNERS files that apply to this commit
@@ -257,15 +272,7 @@ class Commit < ActiveRecord::Base
     files = applicable_owners_files
     raise "No owners found" unless files
 
-    in_main_repository do
-      files.map do |f|
-        `git-show "#{f[:blob]}"`.
-          gsub(/\#.*$/m, ''). # get rid of comments
-          strip. # trim
-          split("\n").
-          reject {|s| s == ''} # get rid of blank lines
-      end
-    end
+    files.map { |f| f[:owners] }
   end
 
   ##

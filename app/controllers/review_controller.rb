@@ -1,6 +1,7 @@
 class ReviewController < ApplicationController
   helper :diff
   helper :chunk
+  helper :commit
 
   def new
     puts params.to_yaml

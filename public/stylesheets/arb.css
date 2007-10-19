@@ -78,3 +78,15 @@ div.comment {  margin: 1em;}
   background: #fff;
   margin: 1em;
 }
+
+
+/* Review Status */
+
+table.review_status { border-collapse: collapse; margin-left: 20px; margin-bottom: 10px;}
+.review_status .header td { padding: 0em; padding-right: 1em; padding-bottom: 5px; text-decoration: underline;}
+.review_status td { padding: 0.0em;}
+.review_status tr.unapproved { border: solid 2px #f00; }
+.review_status .unapproved td { background: #fcc;}
+.review_status .approved td { background: #6f6; }
+.review_status ul { padding-left: 2em; margin-top: 0.5em;}
+.review_status li { list-style-type: square; padding-left: 0em; margin-left: 0em;  }

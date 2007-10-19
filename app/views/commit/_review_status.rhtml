@@ -1,0 +1,34 @@
+<table class="review_status">
+  <tr class="header">
+    <td>Files changed</td>
+    <td>Must be approved by one of</td>
+  </tr>
+<% owners_hash.each_pair do |owners_file, governed_files| %>
+<%   any_approved = ! (approvals & owners_file[:owners]).empty? %>
+
+  <tr class="<%= any_approved ? 'approved':'unapproved' %>">
+    <td style="vertical-align: top;">
+      <ul>
+      <% governed_files.each do |governed_file| %>
+        <li><pre><%=h governed_file %></pre></li>
+      <% end %>
+      </ul>
+    </td>
+
+    <td style="vertical-align: top">
+<!--      <code><%=h owners_file[:path] %>:</code> -->
+      <ul>
+      <% owners_file[:owners].each do |owner| %>
+        <li> <%=h owner %>
+        <% if approvals.include?(owner) %>
+          [Approved!]
+        <% end %>
+        </li>
+      <% end %>
+      </ul>
+    </td>
+
+  </tr>
+<% end %>
+
+</table>
