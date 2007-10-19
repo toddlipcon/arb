@@ -265,8 +265,19 @@ class Commit < ActiveRecord::Base
     @exists_in_review_repository
   end
 
+
+  ##
+  # Makes sure that the commit has been approved by someone from every
+  # applicable OWNERS file
+  ##
   def approved?
-    return self.approvals.count != 0
+    approving_users = self.approvals.map { |a| a.approved_by }
+
+    unsatisfied = owners_contents.select do |owners|
+      (owners & approving_users).empty?
+    end
+
+    unsatisfied.empty?
   end
 
   def diff
