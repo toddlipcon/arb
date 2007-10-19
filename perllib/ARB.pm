@@ -43,7 +43,7 @@ repository directory, or there is no review or main remote defined)
 =cut
 
 sub deduce_project {
-    foreach my $config (qw/remote.main.url remote.review.url/) {
+    foreach my $config (qw/remote.main.url remote.review.url remote.origin.url/) {
         chomp(my $url = `git-config --get $config`);
         next if $? != 0;
 
