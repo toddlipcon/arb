@@ -205,6 +205,41 @@ class Commit < ActiveRecord::Base
   end
 
   ##
+  # Returns a hash where the keys are paths to OWNERS files and the values
+  # are the file names in this commit that are governed by that OWNERS
+  # file
+  ##
+  def applicable_owners_files_hash
+    # Make hash of (directory => [files in that directory in this commit]) pairs
+
+    affected_dirs_hash = changed_files.inject(Hash.new) do |hash, file|
+      d = File.dirname(file)
+      if hash.include?(d)
+        hash[d] << file
+      else
+        hash[d] = [file]
+      end
+      hash
+    end
+
+    affected_dirs = affected_dirs_hash.keys
+
+    # Make hash of owners file => [file1, file2, file3]
+    affected_dirs.inject(Hash.new) do |hash, dir|
+      owner = find_owners_file(dir)
+      
+      if (hash.include?(owner))
+        hash[owner] = hash[owner] + affected_dirs_hash[dir]
+      else
+        hash[owner] = affected_dirs_hash[dir]
+      end
+      hash
+    end
+    
+  end
+
+
+  ##
   # Returns the contents of the OWNERS files that apply to this commit
   # as an array of arrays.
   #

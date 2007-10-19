@@ -36,6 +36,10 @@ class CommitController < ApplicationController
     render :json => @commit.minimal_owners_to_approve
   end
 
+  def applicable_owners_file_hash
+    render :json => @commit.applicable_owners_files_hash
+  end
+
   def approve
     raise "no commit" if @commit.nil?
     @approval = Approval.new(
