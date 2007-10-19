@@ -44,6 +44,7 @@ end
 
 # Mixins
 require 'activerecord_json.rb'
+require 'array_collect_to_hash.rb'
 
 # Add new inflection rules using the following format 
 # (all these examples are active by default):

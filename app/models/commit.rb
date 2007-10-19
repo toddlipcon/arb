@@ -221,14 +221,8 @@ class Commit < ActiveRecord::Base
   def applicable_owners_files_hash
     # Make hash of (directory => [files in that directory in this commit]) pairs
 
-    affected_dirs_hash = changed_files.inject(Hash.new) do |hash, file|
-      d = File.dirname(file)
-      if hash.include?(d)
-        hash[d] << file
-      else
-        hash[d] = [file]
-      end
-      hash
+    affected_dirs_hash = changed_files.collect_to_reverse_hash do |file|
+      File.dirname(file)
     end
 
     affected_dirs = affected_dirs_hash.keys
