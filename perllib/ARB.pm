@@ -162,7 +162,7 @@ Gets the URL for the human-readable review
 sub get_review_url {
     my ($review_id) = @_;
 
-    return $WEBAPP_BASEURL . '/review/' . $review_id . '/show';
+    return $WEBAPP_BASEURL . 'review/' . $review_id . '/show';
 }
 
 =item get_json_request($path, \%params)
