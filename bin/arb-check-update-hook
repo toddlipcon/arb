@@ -1,0 +1,56 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::Bin/../perllib/";
+
+use Data::Dumper qw/Dumper/;
+
+use ARB;
+
+die "usage: $0 ref oldrev newrev" unless @ARGV == 3;
+my ($ref, $old_rev, $new_rev) = @ARGV;
+
+my $project = ARB::deduce_project || die "Couldn't deduce project";
+
+my $response = ARB::get_json_request(
+    "project/$project/check_update",
+    {
+        ref => $ref,
+        old_rev => $old_rev,
+        new_rev => $new_rev
+       });
+
+
+if (! $response) {
+    die "Couldn't connect to ARB server to check update of $ref";
+}
+
+print '=' x 80 . "\n\n";
+print $response->{output};
+print "\n\n";
+print '=' x 80 . "\n";
+
+my $res_code = ($response->{allowed}) ? 0 : 1;
+exit $res_code;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+arb-check-update-hook - a git hook for hooks/update that refuses pushes of unapproved code
+
+=head1 SYNOPSIS
+
+Queries the ARB server to see if the requested push contains only approved commits.
+
+Returns an exit code of 1 if the check fails, causing git to refuse the ref update.
+
+=head1 AUTHOR
+
+Todd Lipcon, E<lt>todd@amiestreet.comE<gt>
+
+=cut
