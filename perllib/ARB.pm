@@ -7,7 +7,7 @@ use JSON;
 use LWP::UserAgent;
 use Cwd;
 
-my $PROJECT_REGEX = qr#^/files/git/repos/[^/]+/(.+?)/?$#;
+my $PROJECT_REGEX = qr#^/files/git/repos/[^/]+/(.+?)/?(?:\.git)?$#;
 
 my $WEBAPP_BASEURL = 'http://janus:3000/';
 
