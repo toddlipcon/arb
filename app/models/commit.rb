@@ -192,7 +192,7 @@ class Commit < ActiveRecord::Base
 
     puts "changed files: #{changed_files.inspect}"
 
-    affected_dirs_hash = changed_files.collect_to_hash do |file|
+    affected_dirs_hash = changed_files.collect_to_reverse_hash do |file|
       File.dirname(file)
     end
 
