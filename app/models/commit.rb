@@ -63,35 +63,15 @@ class Commit < ActiveRecord::Base
       end
   end
 
-  def review_repository_dir
-    self.project.review_repository
-  end
-
-  def main_repository_dir
-    self.project.main_repository
-  end
-
-  def diff_tree
-    check_valid
-
-    project.in_review_repository do
-      return `git-diff-tree --no-commit-id -C --cc #{self.sha1}`
-    end
-  end
 
   def git_show_commit
     check_valid
 
-    project.in_review_repository do
-      return `git-show --pretty=raw #{self.sha1}`
-    end
+    return project.review_repository.git_show(self.sha1)
   end
 
   def git_get_full_revision
-    project.in_review_repository do
-      rev = `git-rev-list -n 1 #{self.sha1} || echo -n FAILURE`
-      return (rev != 'FAILURE') ? rev.chomp : nil
-    end
+    return project.review_repository.git_get_full_revision(self.sha1)
   end
 
   def parse_info
@@ -122,15 +102,9 @@ class Commit < ActiveRecord::Base
 
   def changed_files
     return nil unless exists_in_review_repository?
-    project.in_review_repository do
-      stat = `git diff #{self.sha1}^ #{self.sha1} --name-status`
-      return stat.map do |line|
-        match = line.chomp.match(/^(.)\s+(.+)$/)
-        change_type, file = match[1], match[2]
 
-        file
-      end
-    end
+    stat = project.review_repository.git_diff_status_from_parent(self.sha1)
+    return stat.map { |change| change[:file] }
   end
 
   ##
@@ -162,7 +136,7 @@ class Commit < ActiveRecord::Base
   # Returns nil if there is no applicable OWNERS file.
   ##
   def find_owners_file(dir)
-    project.in_main_repository do
+    project.main_repository.in_repository do
       possible = possible_owners_files(dir)
       safer_args = possible.map { |f| "'" + f + "'" }
 
@@ -237,15 +211,11 @@ class Commit < ActiveRecord::Base
         hash[owner] = affected_dirs_hash[dir]
       end
       hash
-    end
-
-    # Stick the contents of the OWNERS files into the hash
-    
-    
+    end    
   end
 
   def read_owners_file(blob)
-    `git-show "#{blob}"`.
+    project.main_repository.git_show(blob).
       gsub(/\#.*$/m, ''). # get rid of comments
       strip. # trim
       split("\n").
@@ -300,7 +270,8 @@ class Commit < ActiveRecord::Base
   def exists_in_review_repository?
     return @exists_in_review_repository unless @exists_in_review_repository.nil?
 
-    rev = git_get_full_revision
+    puts "project: #{project.inspect}"
+    rev = project.review_repository.git_get_full_revision(self.sha1)
     @exists_in_review_repository = !rev.nil?
     @exists_in_review_repository
   end
@@ -321,7 +292,9 @@ class Commit < ActiveRecord::Base
   end
 
   def diff
-    GitDiffParser.new.parse(self.diff_tree)
+    check_valid
+
+    GitDiffParser.new.parse(project.review_repository.git_diff_tree(self.sha1))
   end
 
   def to_json

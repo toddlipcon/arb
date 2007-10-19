@@ -3,13 +3,12 @@ class Project < ActiveRecord::Base
     Project.find(:first, :conditions => [ 'name = ?', name ])
   end
 
-  def in_review_repository
-    Dir.chdir(self.review_repository) { yield }
+  def review_repository
+    GitRepository.new(self[:review_repository])
   end
 
-  def in_main_repository
-    Dir.chdir(self.main_repository) { yield }
+  def main_repository
+    GitRepository.new(self[:main_repository])
   end
-
 
 end
