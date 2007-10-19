@@ -158,10 +158,15 @@ class Commit < ActiveRecord::Base
 
 
   ##
-  # Finds the blob of the applicable OWNERS file for the given file path
-  # in the main repository.
+  # Finds applicable OWNERS file for the given file path in the main repository.
+  # Returns a hash of the type:
+  # {
+  #    :path   => <the path to the OWNERS file>
+  #    :blob   => <the blob hash of the most recent version of this in the
+  #                  main repository>
+  # }
   #
-  # Returns nil if there is no applicable OWNERS file
+  # Returns nil if there is no applicable OWNERS file.
   ##
   def find_owners_file(dir)
     in_main_repository do
@@ -172,9 +177,9 @@ class Commit < ActiveRecord::Base
 
       owners_hash = existing_owners.inject(Hash.new) do |h, line|
         blob = line.split()[2]
-        filename = line.split("\t")[1]
+        path = line.split("\t")[1]
 
-        h[filename] = blob
+        h[path] = blob
         h
       end
 
@@ -188,13 +193,17 @@ class Commit < ActiveRecord::Base
 
       raise "bad blob" unless blob.length == 40
 
-      return blob
+      return {
+        :path => tightest_owners,
+        :blob => blob
+      }
     end
   end
 
   ##
-  # Returns the blobs of the applicable OWNERS files for all of the files
-  # involved in this commit
+  # Returns the applicable OWNERS files for all of the files
+  # involved in this commit. The output is an array of hashes, where
+  # each hash has the form as returned by find_owners_file() above
   ##
   def applicable_owners_files
     raise "not in review repository" unless exists_in_review_repository?
@@ -227,11 +236,14 @@ class Commit < ActiveRecord::Base
     # Make hash of owners file => [file1, file2, file3]
     affected_dirs.inject(Hash.new) do |hash, dir|
       owner = find_owners_file(dir)
-      
-      if (hash.include?(owner))
-        hash[owner] = hash[owner] + affected_dirs_hash[dir]
+      raise "No owner for dir #{dir}" if owner.nil?
+
+      path = owner[:path]
+
+      if (hash.include?(path))
+        hash[path] = hash[path] + affected_dirs_hash[dir]
       else
-        hash[owner] = affected_dirs_hash[dir]
+        hash[path] = affected_dirs_hash[dir]
       end
       hash
     end
@@ -253,7 +265,7 @@ class Commit < ActiveRecord::Base
 
     in_main_repository do
       files.map do |f|
-        `git-show "#{f}"`.
+        `git-show "#{f[:blob]}"`.
           gsub(/\#.*$/m, ''). # get rid of comments
           strip. # trim
           split("\n").
