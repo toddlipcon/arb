@@ -71,18 +71,10 @@ class Commit < ActiveRecord::Base
     self.project.main_repository
   end
 
-  def in_review_repository
-    Dir.chdir(self.review_repository_dir) { yield }
-  end
-
-  def in_main_repository
-    Dir.chdir(self.main_repository_dir) { yield }
-  end
-
   def diff_tree
     check_valid
 
-    in_review_repository do
+    project.in_review_repository do
       return `git-diff-tree --no-commit-id -C --cc #{self.sha1}`
     end
   end
@@ -90,13 +82,13 @@ class Commit < ActiveRecord::Base
   def git_show_commit
     check_valid
 
-    in_review_repository do
+    project.in_review_repository do
       return `git-show --pretty=raw #{self.sha1}`
     end
   end
 
   def git_get_full_revision
-    in_review_repository do
+    project.in_review_repository do
       rev = `git-rev-list -n 1 #{self.sha1} || echo -n FAILURE`
       return (rev != 'FAILURE') ? rev.chomp : nil
     end
@@ -130,7 +122,7 @@ class Commit < ActiveRecord::Base
 
   def changed_files
     return nil unless exists_in_review_repository?
-    in_review_repository do
+    project.in_review_repository do
       stat = `git diff #{self.sha1}^ #{self.sha1} --name-status`
       return stat.map do |line|
         match = line.chomp.match(/^(.)\s+(.+)$/)
@@ -170,7 +162,7 @@ class Commit < ActiveRecord::Base
   # Returns nil if there is no applicable OWNERS file.
   ##
   def find_owners_file(dir)
-    in_main_repository do
+    project.in_main_repository do
       possible = possible_owners_files(dir)
       safer_args = possible.map { |f| "'" + f + "'" }
 
