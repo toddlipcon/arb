@@ -67,8 +67,16 @@ class Commit < ActiveRecord::Base
     self.project.review_repository
   end
 
+  def main_repository_dir
+    self.project.main_repository
+  end
+
   def in_review_repository
     Dir.chdir(self.review_repository_dir) { yield }
+  end
+
+  def in_main_repository
+    Dir.chdir(self.main_repository_dir) { yield }
   end
 
   def diff_tree
@@ -131,6 +139,122 @@ class Commit < ActiveRecord::Base
         file
       end
     end
+  end
+
+  ##
+  # Looks in dir for a file called .OWNERS, scanning upward
+  # in the repository until it finds one. Returns the blob hash
+  # when it finds one. Returns nil if none is found.
+  #
+  # The directory passed to this should be relative to the
+  # repository root.
+  ##
+  def possible_owners_files(dir)
+    return ['OWNERS'] if dir == '.' || dir == '';
+
+    [File.join([dir, 'OWNERS'])] +
+      possible_owners_files(File.dirname(dir))
+  end
+
+
+  ##
+  # Finds the blob of the applicable OWNERS file for the given file path
+  # in the main repository.
+  #
+  # Returns nil if there is no applicable OWNERS file
+  ##
+  def find_owners_file(dir)
+    in_main_repository do
+      possible = possible_owners_files(dir)
+      safer_args = possible.map { |f| "'" + f + "'" }
+
+      existing_owners = `git-ls-tree HEAD #{safer_args.join(" ")}`.split("\n")
+
+      owners_hash = existing_owners.inject(Hash.new) do |h, line|
+        blob = line.split()[2]
+        filename = line.split("\t")[1]
+
+        h[filename] = blob
+        h
+      end
+
+      tightest_owners = possible.find { |p| owners_hash.include?(p) }
+
+      if tightest_owners.nil?
+        puts "WARNING: no owners file for dir #{dir}" and return nil
+      end
+
+      blob = owners_hash[tightest_owners]
+
+      raise "bad blob" unless blob.length == 40
+
+      return blob
+    end
+  end
+
+  ##
+  # Returns the blobs of the applicable OWNERS files for all of the files
+  # involved in this commit
+  ##
+  def applicable_owners_files
+    raise "not in review repository" unless exists_in_review_repository?
+
+    affected_dirs = changed_files.map { |f| File.dirname(f) }.uniq
+    
+    owners_files = affected_dirs.map { |d| find_owners_file(d) }.uniq
+  end
+
+  ##
+  # Returns the contents of the OWNERS files that apply to this commit
+  # as an array of arrays.
+  #
+  # For example, if a/OWNERS contains "todd\njason" and b/OWNERS contains
+  # "dzs" then a commit that touches a/foo/somefile and b/someotherfile
+  # will return [['todd', 'jason'], ['dzs']]
+  ##
+  def owners_contents
+    files = applicable_owners_files
+    raise "No owners found" unless files
+
+    in_main_repository do
+      files.map do |f|
+        `git-show "#{f}"`.
+          gsub(/\#.*$/m, ''). # get rid of comments
+          strip. # trim
+          split("\n").
+          reject {|s| s == ''} # get rid of blank lines
+      end
+    end
+  end
+
+  ##
+  # Suggests sets of reviewers who could approve this review and satisfy
+  # all OWNERS constraints
+  ##
+  def minimal_owners_to_approve
+    owners = owners_contents
+    
+    # If there's only one OWNERS file that applies, just return it
+    # since the magic cartesian product screws it up
+    if owners.length == 1
+      return owners.first.map { |o| [o] }
+    end
+
+    # Essentially computes the cartesian product of the arrays, but with
+    # uniqueness after each step
+    solutions = owners.inject do |memo, nextArray|
+      memo.inject([]) do |insideMemo, a|
+        insideMemo + nextArray.map do |b|
+          (a.to_a + b.to_a).uniq
+        end
+      end
+    end
+
+    # Find the minimum length possible
+    minlength = solutions.min { |a,b| a.length <=> b.length }.length
+
+    # Return all solutions of that length
+    solutions.select { |a| a.length == minlength }
   end
 
   def exists_in_review_repository?
