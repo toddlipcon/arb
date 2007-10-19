@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::Bin/../perllib/";
+
+use Data::Dumper qw/Dumper/;
+
+use ARB;
+
+
+my $project = ARB::deduce_project();
+
+die "Cannot deduce project" unless $project;
+
+system("git remote add review " . ARB::get_review_repository());
+system("git remote add main " . ARB::get_main_repository());
+
+print "Remotes set up\n";
+
+__END__
+
+=pod
+
+=head1 NAME
+
+arb-setup-remotes - sets up remote branches for the "main" and "review" repositories
+
+=head1 SYNOPSIS
+
+This command will use any of {main, review, origin} to determine the ARB project you're
+working on in this git repository, and then set up git remotes to "main" and "review"
+if they don't already exist.
+
+=head1 AUTHOR
+
+Todd Lipcon, E<lt>todd@amiestreet.comE<gt>
+
+=cut
