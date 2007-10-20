@@ -42,7 +42,13 @@ class GitRepository
         }
       end
     end
-
   end
+
+  def git_rev_list(from, to)
+    in_repository do
+      `git-rev-list #{from}..#{to}`.split("\n")
+    end
+  end
+  
 
 end

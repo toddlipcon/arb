@@ -14,7 +14,7 @@ my ($ref, $old_rev, $new_rev) = @ARGV;
 
 my $project = ARB::deduce_project || die "Couldn't deduce project";
 
-my $response = ARB::get_json_request(
+my $response = ARB::post_json_request(
     "project/$project/check_update",
     {
         ref => $ref,
