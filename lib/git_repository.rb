@@ -50,5 +50,37 @@ class GitRepository
     end
   end
   
+  def git_rev_parse(rev_id)
+    rev = in_repository do
+      `git-rev-parse --verify #{rev_id} 2>/dev/null`.chomp
+    end
+    return rev.empty? ? nil : rev
+  end
+
+  def git_list_branches
+    in_repository do
+      `git-branch --no-color`.split("\n").map do |line|
+        raise "Bad line from git-branch: #{line}" unless line.match(/^..(.+)$/)
+        $1
+      end
+    end
+  end
+
+  def git_add_remote(name, url)
+    in_repository do
+      `git-remote add #{name} #{url} 2>/dev/null`
+    end
+  end
+
+  def git_fetch_from(other_repository)
+    in_repository do
+      output = `git-fetch #{other_repository} 2>&1`
+      raise "Error from git-fetch: #{output}" if $? != 0
+    end
+  end
+
+  def branch(name)
+    GitBranch.new(self, name)
+  end
 
 end

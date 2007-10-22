@@ -31,29 +31,9 @@ class ReviewController < ApplicationController
     end
   end
 
-  def add_commit
-    @review = Review.find(params[:review_id])
-    raise "no such review" if @review.nil?
-
-    @commit = Commit.by_sha1(
-                             :sha1 => params[:sha1],
-                             :project => @review.project
-                             )
-    puts "commit: #{@commit.inspect}"
-    raise "no such commit" if @commit.nil? || ! @commit.valid?
-
-    @review.commits << @commit
-
-    if params[:json]
-      render :json => { :success => true }
-    else
-      render :text => 'successful';
-    end
-  end
-
-
   def show
     @review = Review.find(params[:id])
+
     raise "no such review" if @review.nil?
   end
 end
