@@ -184,7 +184,8 @@ class ArbCommit
   end
 
   def approvals
-    return []
+    return Approval.find(:all,
+                         :conditions => [ "commit_sha1 = ?", self.sha1 ])
   end
 
 
