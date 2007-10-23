@@ -5,3 +5,4 @@ log/*
 tmp/cache/*
 tmp/sessions/*
 tmp/sockets/*
+test/test_git_repo
