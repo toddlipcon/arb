@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Automatically install dependencies for ARB clients
+
+aptitude -y install libterm-readkey-perl libwww-perl libjson-perl
