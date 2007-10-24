@@ -58,7 +58,7 @@ class ArbCommit
 
       blob = owners_hash[tightest_owners]
 
-      raise "bad blob" unless blob.length == 40
+      raise "bad blob" unless !blob.nil? && blob.length == 40
 
       return {
         :path   => tightest_owners,
