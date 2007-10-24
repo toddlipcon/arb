@@ -1,6 +1,4 @@
 class GitBranch
-  include Reloadable
-
   attr_reader :repository
   attr_reader :name
 

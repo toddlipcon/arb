@@ -1,6 +1,4 @@
 class ArbCommit
-  include Reloadable
-
   attr_reader :project
   attr_reader :sha1
 

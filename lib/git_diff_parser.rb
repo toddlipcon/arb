@@ -1,5 +1,4 @@
 class GitDiffParser
-  include Reloadable
   include DiffParser
 
   attr_accessor :state

@@ -1,6 +1,4 @@
 class GitRepository
-  include Reloadable
-
   attr_reader :repository_dir
 
   def initialize(repository_dir)

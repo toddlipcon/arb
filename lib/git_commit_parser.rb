@@ -1,6 +1,4 @@
 class GitCommitParser
-  include Reloadable
-
   def parse(info)
     (info_section, log, diff) = info.split("\n\n", 3)
 

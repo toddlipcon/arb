@@ -1,8 +1,6 @@
 require 'json/objects'
 
 class ActiveRecord::Base
-  include Reloadable
-
   def to_json
     result = Hash.new
 

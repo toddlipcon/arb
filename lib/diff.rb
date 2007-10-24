@@ -2,8 +2,6 @@
 # Generically represent a Diff
 ##
 class Diff
-  include Reloadable
-
   attr_accessor :file_change_sets
 
   def initialize(file_change_sets)

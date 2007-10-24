@@ -1,6 +1,4 @@
 class GitCommit
-  include Reloadable
-
   attr_reader :repository
   attr_reader :sha1
 

@@ -1,4 +1,5 @@
 require File.dirname(__FILE__) + '/../test_helper'
+require File.dirname(__FILE__) + '/../git_test_helper'
 
 class GitCommitTest < Test::Unit::TestCase
 
