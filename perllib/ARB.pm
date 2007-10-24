@@ -62,11 +62,37 @@ Returns the username of the current developer
 =cut
 
 sub get_current_developer {
+    return $ENV{'ARB_USER'} if (exists $ENV{'ARB_USER'});
+
     chomp(my $me = `whoami`);
+
+    if ($me eq 'amiest') {
+        die "Logged in as 'amiest' and ARB_USER env variable not set.";
+    }
+
     return $me;
 }
 
 
+=item prompt_password
+
+Prompts the user for their LDAP password to authenticate to the review system
+
+=cut
+
+sub prompt_password {
+    my $password;
+    {
+        local $| = 1;
+        print "Password for user '" . &get_current_developer() . "':";
+        ReadMode('noecho');
+        chomp($password = ReadLine(0));
+        ReadMode('restore');
+        print "\n";
+    }
+
+    return $password;
+}
 =item get_current_repository
 
 Returns the repository the user is working in
