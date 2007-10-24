@@ -42,8 +42,10 @@ class CommitController < ApplicationController
 
   def approve
     raise "no commit" if @commit.nil?
+    raise "not in review repository" unless @commit.exists_in_review_repository?
+
     @approval = Approval.new(
-                            :commit => @commit,
+                            :commit_sha1 => @commit.review_commit.full_revision,
                             :approved_by => session[:username],
                             :approved_on => Time.new()
                                )
@@ -52,9 +54,26 @@ class CommitController < ApplicationController
       @approval.save
     rescue ActiveRecord::StatementInvalid
       # Probably trying to approve something already approved
-      render :text => 'Cannot approve same commit twice' and return
+
+      if params[:json]
+        render :json => {
+          :success => '0',
+          :reason => 'Cannot approve same commit twice'
+        }
+        return
+      else
+        render :text => 'Cannot approve same commit twice'
+        return
+      end
     end
-    render :text => 'Commit approved'
+
+    if params[:json]
+      render :json => {
+        :success => 1
+      }
+    else
+      render :text => 'Commit approved'
+    end
   end
 
 end

@@ -18,10 +18,12 @@ ActionController::Routing::Routes.draw do |map|
   map.connect ':controller/service.wsdl',
     :action => 'wsdl'
 
-  map.show 'project/:project/commit/sha1/:sha1/:action',
+  map.show 'project/:project/commit/sha1/:sha1/:action/:json',
     :controller => 'commit',
     :action => 'show',
-    :project => /\w+/
+    :project => /\w+/,
+    :json => /(?:json)?/,
+    :defaults => { :json => 0 }
 
   map.new 'comment/new',
     :controller => 'comment',
