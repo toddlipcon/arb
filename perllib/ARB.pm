@@ -118,7 +118,6 @@ sub create_review {
                                          developer => get_current_developer(),
                                          project => deduce_project()
                                         });
-    warn "TODO: create_review not done";
     return $response;
 }
 
@@ -134,22 +133,6 @@ sub get_review {
 
     return get_json_request('/review/' . $id . '/json');
 #TODO(nyi) ARB::Review object
-}
-
-
-=item add_commit_to_review($sha1, $review_id)
-
-Adds a commit to be part of a review. Dies on failure
-
-=cut
-
-sub add_commit_to_review {
-    my ($sha1, $review_id) = @_;
-
-    my $response = get_json_request(
-        '/review/' . $review_id . '/add/commit/sha1/' . $sha1);
-
-    return $response->{success};
 }
 
 

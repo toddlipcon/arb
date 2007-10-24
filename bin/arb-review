@@ -9,14 +9,6 @@ use Data::Dumper qw/Dumper/;
 
 use ARB;
 
-print "\nFetching newest main...\n";
-
-system('git-fetch',
-       'main');
-
-print "\nComputing revision list for review\n";
-
-my @rev_list = &compute_list_for_review('refs/remotes/main/master');
 
 print "Creating review on review system...\n";
 
@@ -38,25 +30,9 @@ system("git-push",
        ARB::get_review_repository(),
        $review_branch);
 
+print "\n" . '='x60 . "\n\n";
 
-print "\nInserting revisions into review...\n";
-
-foreach my $rev (@rev_list) {
-    print "Inserting revision $rev...";
-    ARB::add_commit_to_review($rev, $review->{id});
-    print "done\n";
-}
-
-print "Review is complete. You can see it at:\n";
+print "Review is created. You can see it at:\n";
 print ARB::get_review_url($review->{id});
 
-
-sub compute_list_for_review {
-    my ($destination) = @_;
-    open(REV_LIST, "-|", "git-rev-list", 'HEAD', '^' . $destination)
-        || die "Couldnt open pipe to git-rev-list: $!";
-    chomp(my @revs = <REV_LIST>);
-    close(REV_LIST);
-
-    return @revs;
-}
+print "\n\n" . '='x60 . "\n";
