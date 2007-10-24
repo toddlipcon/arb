@@ -2,6 +2,8 @@ class ArbCommit
   attr_reader :project
   attr_reader :sha1
 
+  OwnersFileName = ".OWNERS"
+
   def initialize(project, sha1)
     @project = project
     @sha1 = sha1
@@ -16,9 +18,9 @@ class ArbCommit
   # repository root.
   ##
   def possible_owners_files(dir)
-    return ['OWNERS'] if dir == '.' || dir == '';
+    return [OwnersFileName] if dir == '.' || dir == '';
 
-    [File.join([dir, 'OWNERS'])] +
+    [File.join([dir, OwnersFileName])] +
       possible_owners_files(File.dirname(dir))
   end
 
