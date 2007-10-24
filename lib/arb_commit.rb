@@ -7,6 +7,10 @@ class ArbCommit
   def initialize(project, sha1)
     @project = project
     @sha1 = sha1
+
+    if exists_in_review_repository?
+      @sha1 = review_commit.full_revision
+    end
   end
 
   ##
