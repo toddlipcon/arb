@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::Bin/../perllib/";
+
+use Data::Dumper qw/Dumper/;
+
+use ARB;
+
+die "usage: $0 <commit-id>" unless @ARGV == 1;
+
+my $commit_id = shift @ARGV;
+
+my $response = ARB::approve_commit($commit_id);
+
+print Dumper($response);

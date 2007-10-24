@@ -5,6 +5,7 @@ use strict;
 
 use JSON;
 use LWP::UserAgent;
+use Term::ReadKey;
 use Cwd;
 
 my $PROJECT_REGEX = qr#^/files/git/repos/[^/]+/(.+?)/?(?:\.git)?$#;
@@ -162,6 +163,25 @@ sub get_review {
 }
 
 
+=item approve_commit($sha1)
+
+Approves the commit named by the given (abbreviated) sha1
+
+=cut
+
+sub approve_commit {
+    my ($sha1) = @_;
+
+    my $project = deduce_project();
+    my $developer = get_current_developer();
+    my $password = prompt_password();
+
+    return get_json_request("/project/$project/commit/sha1/$sha1/approve/json",
+                            {},
+                            [$developer, $password]);
+}
+
+
 =item get_review_url($review_id)
 
 Gets the URL for the human-readable review
@@ -174,12 +194,14 @@ sub get_review_url {
     return $WEBAPP_BASEURL . 'review/' . $review_id . '/show';
 }
 
-=item get_json_request($path, \%params)
+=item get_json_request($path, \%params, \@credentials)
 
-=item post_json_request($path, \%params)
+=item post_json_request($path, \%params. \@credentials)
 
 Does an HTTP POST to the review server with the given path and parameters.
 Expects that the response is JSON encoded and decodes it to a perl hashref.
+
+If C<\@credentials> is passed, it should be a [$user, $password] pair.
 
 =cut
 
@@ -192,7 +214,7 @@ sub get_json_request {
 }
 
 sub json_request {
-    my ($method, $path, @params) = @_;
+    my ($method, $path, $params, $credentials) = @_;
 
     die "bad method" unless $method =~ /^get|post$/i;
 
@@ -200,19 +222,38 @@ sub json_request {
 
     my $url = $WEBAPP_BASEURL . $path;
 
-    my $response = _create_useragent()->$method($url, @params);
+    my $ua = _create_useragent($credentials);
+
+    my $response = $ua->$method($url, $params);
     return _decode_response($url, uc $method, $response);
 }
 
 sub _create_useragent {
+    my $credentials = shift @_;
+
     my $ua = LWP::UserAgent->new;
     $ua->timeout($USER_AGENT_TIMEOUT);
+
+    if (defined $credentials) {
+        die 'bad credentials. Expected [$user, $password]'
+            unless scalar @{$credentials} == 2;
+
+        my $h = HTTP::Headers->new;
+        $h->authorization_basic(@$credentials);
+        $ua->default_headers($h);
+    }
 
     return $ua;
 }
 
 sub _decode_response {
     my ($url, $method, $response) = @_;
+
+    if ($response->code == 401) { # 401 Unauthorized
+        print STDERR "401 Unauthorized -- bad username or password\n";
+        exit 1;
+    }
+
     die "unsuccessful $method to $url: " . $response->status_line .
         "\n\nResponse\n\n" . $response->content
         unless $response->is_success;
