@@ -53,7 +53,8 @@ class ArbCommit
       tightest_owners = possible.find { |p| owners_hash.include?(p) }
 
       if tightest_owners.nil?
-        puts "WARNING: no owners file for dir #{dir}" and return nil
+        puts "WARNING: no owners file for dir #{dir}"
+        return nil
       end
 
       blob = owners_hash[tightest_owners]
