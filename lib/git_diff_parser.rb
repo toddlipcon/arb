@@ -142,6 +142,11 @@ Reads the extended header lines:
             :src_modes => match_data[1].split(','),
             :dst_mode     => match_data[2]
           }
+      elsif match_data = line.match(/^(old|new) mode (\d+)$/)
+        headers[match_data[1] + " mode"] =
+          {
+            :mode => match_data[2]
+          }
       elsif match_data = line.match(/^new file mode (\d+)$/)
         headers['new file'] =
           {
@@ -385,12 +390,13 @@ Reads lines of the type:
     # Figure out the blobs involved
     debug "Extended headers: #{extended_headers.inspect}"
 
-    unless index_info = extended_headers['index']
-      except("No index header found for chunk")
+    if index_info = extended_headers['index']
+      blobs = index_info[:src_blobs].concat([index_info[:dst_blob]])
+      debug('blobs: ' + blobs.inspect)
+    else
+      # In the case of just a mode change, there is no index header
+      blobs = []
     end
-
-    blobs = index_info[:src_blobs].concat([index_info[:dst_blob]])
-    debug('blobs: ' + blobs.inspect)
 
     return Diff::FileChangeSet.new(files,
                                    blobs,
