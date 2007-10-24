@@ -126,10 +126,10 @@ class ArbCommit
   end
 
   def read_owners_file(blob)
-    project.main_repository.git_show(blob).
-      gsub(/\#.*$/m, ''). # get rid of comments
-      strip. # trim
+    ret = project.main_repository.git_show(blob).
+      gsub(/\#.*$/s, ''). # get rid of comments
       split("\n").
+      map {|s| s.strip }.
       reject {|s| s == ''} # get rid of blank lines
   end
 
