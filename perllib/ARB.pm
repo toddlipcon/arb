@@ -129,7 +129,7 @@ is not found.
 =cut
 
 sub get_review {
-    my $id = (@_);
+    my ($id) = @_;
 
     return get_json_request('/review/' . $id . '/json');
 #TODO(nyi) ARB::Review object
