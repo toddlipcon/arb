@@ -15,6 +15,10 @@ class GitCommit
     return repository.git_get_full_revision(self.sha1)
   end
 
+  def exists_in_repository?
+    ! repository.git_rev_parse(@sha1).nil?
+  end
+
   def parse_info
     return @parsed_info unless @parsed_info.nil?
 

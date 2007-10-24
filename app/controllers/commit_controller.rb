@@ -8,9 +8,9 @@ class CommitController < ApplicationController
 
   def get_commit
     @project = Project.find(:first, :conditions => [ 'name = ?', params[:project] ])
-    puts "Project is #{@project.inspect}"
-    @commit = Commit.by_sha1(:sha1 => params[:sha1],
-                             :project => @project)
+    @commit = ArbCommit.new(@project, params[:sha1])
+    
+    raise "Commit not in review repository" unless @commit.exists_in_review_repository?
   end
 
   def diff

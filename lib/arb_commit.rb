@@ -71,6 +71,10 @@ class ArbCommit
     end
   end
 
+  def exists_in_review_repository?
+    review_commit.exists_in_repository?
+  end
+
   ##
   # Returns the applicable OWNERS files for all of the files
   # involved in this commit. The output is an array of hashes, where
@@ -106,7 +110,11 @@ class ArbCommit
     # Make hash of owners file => [file1, file2, file3]
     affected_dirs.inject(Hash.new) do |hash, dir|
       owner = find_owners_file(dir)
-      raise "No owner for dir #{dir}" if owner.nil?
+
+      # If there's no OWNERS file for this dir, just skip it
+      if owner.nil?
+        return hash
+      end
 
       if (hash.include?(owner))
         hash[owner] = hash[owner] + affected_dirs_hash[dir]
