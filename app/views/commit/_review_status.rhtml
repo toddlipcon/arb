@@ -3,10 +3,13 @@
     <td>Files changed</td>
     <td>Must be approved by one of</td>
   </tr>
-<% owners_hash.each_pair do |owners_file, governed_files| %>
-<%   any_approved = ! (approvals & owners_file[:owners]).empty? %>
-
+<% owners_hash.each_pair do |owners_file, data|
+     owners = data[:owner_data][:owners] 
+     any_approved = ! (approvals & owners).empty?
+     governed_files = data[:files]
+%>
   <tr class="<%= any_approved ? 'approved':'unapproved' %>">
+
     <td style="vertical-align: top;">
       <ul>
       <% governed_files.each do |governed_file| %>
@@ -18,7 +21,7 @@
     <td style="vertical-align: top">
 <!--      <code><%=h owners_file[:path] %>:</code> -->
       <ul>
-      <% owners_file[:owners].each do |owner| %>
+      <% owners.each do |owner| %>
         <li> <%=h owner %>
         <% if approvals.include?(owner) %>
           [Approved!]

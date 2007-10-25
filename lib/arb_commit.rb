@@ -93,8 +93,10 @@ class ArbCommit
   end
 
   ##
-  # Returns a hash where the keys are hashes of the form returned by
-  # find_owners_file and the values are the file names in this commit
+  # Returns a hash where the keys are the string paths of the OWNERS files
+  # and the values are hashes with two keys, :owner_data, and :files.
+  # The values for [:owner_data] are the same format as those returned by
+  # find_owners_file. The values of [:files] are the file names in this commit
   # that are governed by that OWNERS file
   ##
   def applicable_owners_files_hash
@@ -120,10 +122,20 @@ class ArbCommit
         return hash
       end
 
-      if (hash.include?(owner))
-        hash[owner] = hash[owner] + affected_dirs_hash[dir]
+      data = {
+        :owner_data => owner,
+        :files      => affected_dirs_hash[dir]
+      }
+
+      key = owner[:path]
+
+      if (hash.include?(key))
+        combined_data = hash[key]
+        combined_data[:files] = combined_data[:files] + data[:files]
+
+        hash[key] = combined_data
       else
-        hash[owner] = affected_dirs_hash[dir]
+        hash[key] = data
       end
       hash
     end    
