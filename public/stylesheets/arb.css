@@ -1,5 +1,7 @@
+body, table td { font-size: 85% }
+
 pre,code,tt {
-  font: 1em 'andale mono', 'monotype.com', 'lucida console', monospace;
+  font:  'andale mono', 'monotype.com', 'lucida console', monospace;
   line-height: 1;
   white-space: pre;
 }
@@ -33,6 +35,7 @@ table.diff_header, table.review_header {
   font-weight: bold;
   text-align: right;
   padding-right: 10px;
+  vertical-align: top;
 }
 
 .file_change_set .file_change_set_header .binary_files {
