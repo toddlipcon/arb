@@ -39,12 +39,13 @@ Rails::Initializer.run do |config|
   # config.active_record.default_timezone = :utc
   
   # See Rails::Configuration for more options
-
 end
 
 # Mixins
 require 'activerecord_json.rb'
 require 'array_collect_to_hash.rb'
+
+ActiveRecord::Base.verification_timeout = 14400
 
 # Add new inflection rules using the following format 
 # (all these examples are active by default):
