@@ -19,6 +19,8 @@ table.diff_header, table.review_header {
   margin: 1em;
 }
 
+table.review_header { margin-left: 0; }
+
 .file_change_set .file_change_set_header { 
   margin-top: 1em;
   margin-left: 1.5em;
@@ -89,7 +91,16 @@ table.review_status { border-collapse: collapse; margin-left: 20px; margin-botto
 .review_status .header td { padding: 0em; padding-right: 1em; padding-bottom: 5px; text-decoration: underline;}
 .review_status td { padding: 0.0em;}
 .review_status tr.unapproved { border: solid 2px #f00; }
-.review_status .unapproved td { background: #fcc;}
-.review_status .approved td { background: #6f6; }
+.review_status .unapproved td, .review_summary li.unapproved { background: #fcc;}
+.review_status .approved td, .review_summary li.approved { background: #6f6; }
 .review_status ul { padding-left: 2em; margin-top: 0.5em;}
 .review_status li { list-style-type: square; padding-left: 0em; margin-left: 0em;  }
+
+/* Review summary */
+
+table.review_summary { border: solid 1px #000; margin-left: 0em; }
+.review_summary .header { font-weight: bold; }
+ { background: #9f9; }
+
+div.commit { background: #ddf; margin: 1em; }
+div.commit table {  background: #fff; }

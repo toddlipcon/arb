@@ -21,12 +21,16 @@
   </tr>
 </table>
 
+<%= render_partial 'review/summary', @review %>
+
 <% @review.commits.reverse.each do |commit| %>
 
-  <%= render_partial 'commit/header', commit %>
-
-  <% commit.diff.file_change_sets.each do |fcs| %>
-    <%= render_partial 'commit/file_change_set', fcs %>
-  <% end %>
-
+  <div class="commit">
+    <a name="commit_<%= commit.sha1 %>">
+      <%= render_partial 'commit/header', commit %>
+    </a>
+    <% commit.diff.file_change_sets.each do |fcs| %>
+      <%= render_partial 'commit/file_change_set', fcs %>
+    <% end %>
+  </div>
 <% end %>

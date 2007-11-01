@@ -1,0 +1,15 @@
+<% review = summary %>
+
+<table class="review_summary">
+<tr><td>
+  <span class="header">Commits in this review:</span>
+  <ul>
+    <% review.commits.reverse.each do |commit| %>
+      <li class="<%= commit.approved? ? "approved":"unapproved" %>">
+        <tt><%=h commit.sha1.slice(0,10) %> <%=h commit.log_message.split("\n").first %></tt>
+        [<a href="#commit_<%= commit.sha1 %>">go</a>]
+      </li>
+    <% end %>
+  </ul>
+</td></tr>
+</table>
