@@ -10,7 +10,7 @@ use Cwd;
 
 my $PROJECT_REGEX = qr#^/files/git/repos/[^/]+/(.+?)/?(?:\.git)?$#;
 
-my $WEBAPP_BASEURL = 'http://janus:3000/';
+my $WEBAPP_BASEURL = 'http://janus.corp.amiestreet.com:3000/';
 
 my $REVIEW_BASE = '/files/git/repos/review';
 my $MAIN_BASE   = '/files/git/repos/main';
