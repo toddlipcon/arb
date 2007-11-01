@@ -15,7 +15,7 @@ my $WEBAPP_BASEURL = 'http://janus.corp.amiestreet.com:3000/';
 my $REVIEW_BASE = '/files/git/repos/review';
 my $MAIN_BASE   = '/files/git/repos/main';
 
-my $USER_AGENT_TIMEOUT = 5;
+my $USER_AGENT_TIMEOUT = 15;
 
 ############################################################
 
