@@ -23,10 +23,21 @@ class Review < ActiveRecord::Base
     end
   end
 
-
   def minimal_owners_to_approve
     solution = commits.inject([]) do |oldSoln, nextTerm|
       oldSoln.minimum_length_cartesian_terms(nextTerm.minimal_owners_to_approve)
     end
   end
+
+  def log
+    project.review_repository.git_log(against_sha1, "review-#{id}")
+  end
+
+  def count_commits
+    if @count_commits.nil?
+      @count_commits = branch.rev_list_from(self.against_sha1).length
+    end
+    @count_commits
+  end
+
 end

@@ -31,16 +31,27 @@ class ReviewController < ApplicationController
     end
   end
 
-  def show
+  def get_review
     @review = Review.find(params[:id])
+    raise "no review" if @review.nil?
+  end
 
-    raise "no such review" if @review.nil?
+  def show
+    get_review
   end
 
   def minimal_owners_to_approve
-    @review = Review.find(params[:id])
-    raise "no review" if @review.nil?
-
+    get_review
     render :json => @review.minimal_owners_to_approve
+  end
+
+  def notify
+    get_review
+    @reviewer = params[:reviewer]
+
+    Notifier.deliver_new_review(@review, @reviewer)
+    render :json =>
+      {:success => true }
+
   end
 end

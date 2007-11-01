@@ -1,0 +1,22 @@
+Hi <%= @reviewer_username %>,
+
+<%= @review.developer %> would like you to do a code review of <%= @review.count_commits %> commits.
+
+At your earliest convenience, please proceed to:
+
+http://janus.corp.amiestreet.com:3000/review/<%= @review.id %>/show
+
+or enter your <%= @review.project.name %> repository and do:
+
+git fetch review review-<%= @review.id %>
+git checkout remotes/review/review-<%= @review.id %>
+
+
+Log of commits in this review
+=============================
+
+<%= @review.log %>
+
+
+Thanks,
+-ARB Notifier

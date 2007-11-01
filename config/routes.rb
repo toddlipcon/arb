@@ -39,6 +39,11 @@ ActionController::Routing::Routes.draw do |map|
     :json => /(?:json)?/,
     :defaults => { :json => 0 }
 
+  map.notify 'review/:id/notify/:reviewer',
+    :controller => 'review',
+    :action => 'notify',
+    :reviewer => /\w+/
+
   # Install the default route as the lowest priority.
   map.connect ':controller/:id/:action'
 end

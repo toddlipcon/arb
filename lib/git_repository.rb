@@ -77,6 +77,14 @@ class GitRepository
     end
   end
 
+  def git_log(from, to, flags="")
+    in_repository do
+      output = `git-log #{flags} #{from}..#{to}`
+      raise "Error from git-log: #{output}" if $? != 0
+      output
+    end
+  end
+  
   def branch(name)
     GitBranch.new(self, name)
   end
