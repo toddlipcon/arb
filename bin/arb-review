@@ -5,14 +5,32 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/../perllib/";
 
+use Getopt::Long;
+use Pod::Usage;
 use Data::Dumper qw/Dumper/;
 
 use ARB;
 
+my $VERBOSE = 0;
+
+my $getopt = GetOptions(
+    "help" => sub { pod2usage(-verbose => 2); },
+    "verbose|v" => \$VERBOSE,
+) or pod2usage(-verbose => 1);
+
+
+my $branch_param = shift @ARGV;
+my $against_sha1 = determine_against_sha1($branch_param);
+
+
+&confirm_review($against_sha1);
+
+print STDERR "Submitting review against $against_sha1...\n" if $VERBOSE;
+
 
 print "Creating review on review system...\n";
 
-my $review = ARB::create_review();
+my $review = ARB::create_review($against_sha1);
 
 print "Created review id " . $review->{id} . "\n";
 
@@ -36,3 +54,139 @@ print "Review is created. You can see it at:\n";
 print ARB::get_review_url($review->{id});
 
 print "\n\n" . '='x60 . "\n";
+
+
+
+##
+# Print out a list of the revisions that will be in this review, and ask the user for
+# confirmation to make sure they're submitting what they think they are
+##
+sub confirm_review {
+    my $against_sha1 = shift @_;
+    my @revs = split("\n", `git-log --abbrev-commit --pretty=oneline $against_sha1..HEAD`);
+
+    if (scalar @revs == 0) {
+        print "No revisions in this review. Exiting\n";
+        exit(0);
+    }
+
+    print
+        "Revisions to be submitted in this review:\n" .
+            "-----------------------------------------\n" .
+                "\n" .
+                    join("\n", @revs) . "\n\n";
+
+    print "(" . scalar @revs . " total revisions)\n";
+
+    if (scalar @revs > 10) {
+        print "\n" .
+            "*" x 30 . " WARNING " . "*" x 30 . "\n" .
+                uc "You are submitting a lot of revisions at once.\n" .
+                    "  are you sure you mean to do this??!!\n" .
+                        "*" x 69 . "\n";
+    }
+
+    print  '-'x80 . "\n";
+
+    {
+        $| = 1;
+        print "Is this correct? (Y/n)";
+        chomp(my $confirm = <STDIN>);
+        die unless ($confirm =~ /^[yY]?(?:es)?$/)
+    }
+}
+
+##
+# Determine the commit this review should be submitted against, based on the rules outlined
+# in the perldoc below
+##
+sub determine_against_sha1 {
+    my $branch_param = shift @_;
+
+    if (! $branch_param) {
+# No branch passed -- derive one according to rules in perldoc
+        chomp(my $cur_branch = `git-symbolic-ref HEAD 2>/dev/null`);
+        if ($cur_branch =~ m#^refs/heads/(.+)$#) {
+            $cur_branch = $1;
+
+            print STDERR "No branch passed. Currently on $cur_branch...\n" if $VERBOSE;
+
+            # Check if remotes/main/<branch> exists
+
+            chomp(my $remote_sha1 = `git-rev-parse --verify remotes/main/$cur_branch 2>/dev/null`);
+            if ($? == 0) {
+                # It exists
+                print STDERR "remotes/main/$cur_branch exists -- submitting against that.\n"
+                    if $VERBOSE;
+                return $remote_sha1;
+            } else {
+                print STDERR "remotes/main/$cur_branch doesn't exist. defaulting to master.\n";
+            }
+        } else {                # no current branch
+            print STDERR "Not currently on a branch\n" if $VERBOSE;
+        }
+    }
+
+# Haven't been able to derive a branch
+    if (! $against_sha1) {
+        my $against_branch = $branch_param || 'remotes/main/master';
+        
+        chomp(my $parsed = `git-rev-parse --verify $against_branch 2>/dev/null`);
+
+        if ($? != 0) {
+            die "Could not parse against-branch '$against_branch'";
+        }
+
+        return $parsed;
+    }
+
+}
+
+
+
+=head1 NAME
+
+arb-review - submits a set of commits for code review
+
+=head1 SYNOPSIS
+
+B<arb-review> [I<AGAINST>]
+
+=head1 DESCRIPTION
+
+Submits a set of commits for code review in the ARB system.
+
+The set of commits grouped together and submitted is one of the following,
+listed in order of precedence:
+
+=over 4
+
+=item 1.
+
+The set of commits in your current git HEAD that are not in the branch passed in
+the I<AGAINST> parameter. This parameter must be valid input to L<git-rev-parse(1)> --
+for example a branch name or a possibly abbreviated commit hash.
+
+=item 2.
+
+The set of commits in your current git HEAD that are not in remotes/main/I<branch>
+where I<branch> is the name of your current branch. For example, if you are currently
+working in the C<signup> branch, and the branch C<remotes/main/signup> exists, the
+review will contain all changes in your HEAD (local C<signup> branch) that are not
+in C<remotes/main/signup>
+
+=item 3.
+
+The set of commits in your current git HEAD that are not in remotes/main/master.
+
+=back
+
+The three alternatives listed above are tried in the order listed, and the first
+applicable set is chosen.
+
+
+=head1 AUTHOR
+
+Todd Lipcon E<lt>todd@amiestreet.comE<gt>
+
+=cut

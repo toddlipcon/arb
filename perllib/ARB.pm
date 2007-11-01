@@ -132,18 +132,23 @@ sub get_main_repository {
 
 
 
-=item create_review
+=item create_review($against_sha1)
 
 Returns the unique id for a new review in the database
 
 =cut
 
 sub create_review {
+    my $against_sha1 = shift @_;
+
+    die "Bad sha1" if (not defined $against_sha1) || ($against_sha1 !~ /^[\da-f]{40}$/);
+
     my $response = post_json_request('/review/new/json',
                                      {
                                          repository => get_current_repository(),
                                          developer => get_current_developer(),
-                                         project => deduce_project()
+                                         project => deduce_project(),
+                                         against_sha1 => $against_sha1
                                         });
     return $response;
 }
