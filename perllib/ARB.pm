@@ -187,6 +187,39 @@ sub approve_commit {
 }
 
 
+=item get_suggested_reviewers($review_id)
+
+Returns an array of arrayrefs with options for who should review the given review.
+
+=cut
+
+sub get_suggested_reviewers {
+    my ($review_id) = @_;
+
+    my $reviewers = get_json_request("/review/$review_id/minimal_owners_to_approve");
+    return @{$reviewers};
+}
+
+=item notify_reviewers($review_id, @reviewers)
+
+Notifies a list of reviewers that this review is pending
+
+=cut
+
+sub notify_reviewers {
+    my ($review_id, @reviewers) = @_;
+
+    foreach my $reviewer (@reviewers) {
+        local $| = 1;
+        print "Notifying reviewer: $reviewer...";
+
+        my $response = get_json_request("/review/$review_id/notify/$reviewer");
+        
+        print "\n";
+    }
+}
+
+
 =item get_review_url($review_id)
 
 Gets the URL for the human-readable review
@@ -228,6 +261,8 @@ sub json_request {
     my $url = $WEBAPP_BASEURL . $path;
 
     my $ua = _create_useragent($credentials);
+
+    $params ||= {};
 
     my $response = $ua->$method($url, $params);
     return _decode_response($url, uc $method, $response);
