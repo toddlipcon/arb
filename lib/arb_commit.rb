@@ -194,13 +194,16 @@ class ArbCommit
   # applicable OWNERS file
   ##
   def approved?
+    return @approved unless @approved.nil?
+
     approving_users = self.approvals.map { |a| a.approved_by }
 
     unsatisfied = owners_contents.select do |owners|
       (owners & approving_users).empty?
     end
 
-    unsatisfied.empty?
+    @approved = unsatisfied.empty?
+    @approved
   end
 
   def approvals
