@@ -17,7 +17,7 @@ class Array
   end
 
   def minimum_length_cartesian_terms(b)
-    carts = self.cartesian_product(b).map { |a| a.flatten.uniq }.uniq
+    carts = self.cartesian_product(b).map { |a| a.flatten.uniq.sort }.uniq
     return [] if carts.empty?
 
     minLength = carts.min { |a, b| a.length <=> b.length }.length
