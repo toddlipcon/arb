@@ -36,4 +36,11 @@ class ReviewController < ApplicationController
 
     raise "no such review" if @review.nil?
   end
+
+  def minimal_owners_to_approve
+    @review = Review.find(params[:id])
+    raise "no review" if @review.nil?
+
+    render :json => @review.minimal_owners_to_approve
+  end
 end

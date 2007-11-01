@@ -89,7 +89,10 @@ class ArbCommit
 
     affected_dirs = changed_files.map { |f| File.dirname(f) }.uniq
     
-    owners_files = affected_dirs.map { |d| find_owners_file(d) }.uniq
+    owners_files = affected_dirs.
+      map { |d| find_owners_file(d) }.
+      reject { |d| d.nil? }.
+      uniq
   end
 
   ##
@@ -159,8 +162,10 @@ class ArbCommit
   ##
   def owners_contents
     files = applicable_owners_files
-    raise "No owners found" unless files
 
+    return [] if files.nil?
+
+    puts "f: #{files.inspect}"
     files.map { |f| f[:owners] }
   end
 
@@ -170,28 +175,18 @@ class ArbCommit
   ##
   def minimal_owners_to_approve
     owners = owners_contents
-    
+
+    return [] if owners.empty?
+
     # If there's only one OWNERS file that applies, just return it
     # since the magic cartesian product screws it up
     if owners.length == 1
       return owners.first.map { |o| [o] }
     end
 
-    # Essentially computes the cartesian product of the arrays, but with
-    # uniqueness after each step
-    solutions = owners.inject do |memo, nextArray|
-      memo.inject([]) do |insideMemo, a|
-        insideMemo + nextArray.map do |b|
-          (a.to_a + b.to_a).uniq
-        end
-      end
+    owners.inject do |oldSoln, nextSet|
+      oldSoln.minimum_length_cartesian_terms(nextSet)
     end
-
-    # Find the minimum length possible
-    minlength = solutions.min { |a,b| a.length <=> b.length }.length
-
-    # Return all solutions of that length
-    solutions.select { |a| a.length == minlength }
   end
 
   ##

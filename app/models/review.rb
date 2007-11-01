@@ -23,4 +23,10 @@ class Review < ActiveRecord::Base
     end
   end
 
+
+  def minimal_owners_to_approve
+    solution = commits.inject([]) do |oldSoln, nextTerm|
+      oldSoln.minimum_length_cartesian_terms(nextTerm.minimal_owners_to_approve)
+    end
+  end
 end

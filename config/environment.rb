@@ -44,6 +44,7 @@ end
 # Mixins
 require 'activerecord_json.rb'
 require 'array_collect_to_hash.rb'
+require 'array_cartesian_product.rb'
 
 ActiveRecord::Base.verification_timeout = 14400
 
