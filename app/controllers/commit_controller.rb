@@ -41,8 +41,21 @@ class CommitController < ApplicationController
   end
 
   def approve
-    raise "no commit" if @commit.nil?
-    raise "not in review repository" unless @commit.exists_in_review_repository?
+    begin
+      raise "no commit" if @commit.nil?
+      raise "not in review repository" unless @commit.exists_in_review_repository?
+      raise "not allowed" unless @commit.allowed_approvers.include?(session[:username])
+    rescue Exception => e
+      if params[:json]
+        render :json => {
+          :success => '0',
+          :reason => e
+        }
+      else
+        render :text => 'Error: ' + e
+      end
+      return
+    end
 
     @approval = Approval.new(
                             :commit_sha1 => @commit.review_commit.full_revision,
