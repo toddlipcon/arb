@@ -191,7 +191,7 @@ class ArbCommit
   # all OWNERS constraints
   ##
   def minimal_owners_to_approve
-    owners = owners_contents
+    owners = owners_contents.map { |o| o & allowed_approvers }
 
     return [] if owners.empty?
 
