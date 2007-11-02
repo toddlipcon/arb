@@ -115,7 +115,7 @@ Returns the repository to push reviews to
 =cut
 
 sub get_review_repository {
-    return $REVIEW_BASE . '/' . deduce_project();
+    return get_repo_prefix() . $REVIEW_BASE . '/' . deduce_project();
 }
 
 
@@ -126,9 +126,13 @@ Returns the repository to eventually push commits to
 =cut
 
 sub get_main_repository {
-    return $MAIN_BASE . '/' . deduce_project();
+    return get_repo_prefix() . $MAIN_BASE . '/' . deduce_project();
 }
 
+
+sub get_repo_prefix {
+    return 'ssh://' . get_current_developer() . '@janus.corp.amiestreet.com';
+}
 
 
 
