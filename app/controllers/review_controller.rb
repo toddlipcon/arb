@@ -52,6 +52,10 @@ class ReviewController < ApplicationController
     Notifier.deliver_new_review(@review, @reviewer)
     render :json =>
       {:success => true }
+  end
 
+  def approved
+    get_review
+    render :json => @review.approved?
   end
 end

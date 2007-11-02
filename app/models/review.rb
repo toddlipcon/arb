@@ -40,4 +40,8 @@ class Review < ActiveRecord::Base
     @count_commits
   end
 
+  def approved?
+    commits.all? { |c| c.approved? }
+  end
+
 end
