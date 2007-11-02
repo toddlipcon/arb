@@ -5,10 +5,14 @@ use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../perllib/";
 
-use Data::Dumper qw/Dumper/;
+use Pod::Usage;
+use Getopt::Long;
 
 use ARB;
 
+my $getopt = GetOptions(
+    "help" => sub { pod2usage(-verbose => 2); }
+) or pod2usage(-verbose => 1);
 
 my $project = ARB::deduce_project();
 
@@ -28,6 +32,10 @@ __END__
 arb-setup-remotes - sets up remote branches for the "main" and "review" repositories
 
 =head1 SYNOPSIS
+
+B<arb-setup-remotes>
+
+=head1 DESCRIPTION
 
 This command will use any of {main, review, origin} to determine the ARB project you're
 working on in this git repository, and then set up git remotes to "main" and "review"

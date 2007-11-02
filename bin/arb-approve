@@ -5,14 +5,43 @@ use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../perllib/";
 
-use Data::Dumper qw/Dumper/;
+use Pod::Usage;
+use Getopt::Long;
 
 use ARB;
 
-die "usage: $0 <commit-id>" unless @ARGV == 1;
+my $getopt = GetOptions(
+    "help" => sub { pod2usage(-verbose => 2); }
+) or pod2usage(-verbose => 1);
+
+pod2usage(-verbose => 1) unless @ARGV == 1;
 
 my $commit_id = shift @ARGV;
 
 my $response = ARB::approve_commit($commit_id);
 
 print Dumper($response);
+
+
+__END__
+
+=pod
+
+=head1 NAME
+
+arb-approve - records your approval of a commit in the ARB system
+
+=head1 SYNOPSIS
+
+B<arb-approve> I<commit-hash>
+
+=head1 DESCRIPTION
+
+Records your approval of a commit in the ARB system.
+
+The I<commit-hash> argument specifies the commit you are approving. You may
+use an abbreviated hash as long as it is unique.
+
+=head1 AUTHOR
+
+Todd Lipcon, E<lt>todd@amiestreet.comE<gt>
