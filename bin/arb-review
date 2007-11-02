@@ -104,7 +104,7 @@ print <<END_OF_OPTIONS;
 
 Review Complete!
 
-How would you like to procede?
+How would you like to proceed?
 
 1) Continue working in the $cur_branch branch.
 
