@@ -89,6 +89,59 @@ if (scalar @owners != 0) {
 }
 
 ##
+# Now that they've submitted a review, they may want to rewind their master branch back
+# to the remote to work on other features. Give them the option
+##
+
+chomp(my $cur_branch = `git-symbolic-ref HEAD 2>/dev/null`);
+if ($cur_branch =~ m#^refs/heads/(.+)$#) {
+    $cur_branch = $1;
+}
+
+print <<END_OF_OPTIONS;
+
+================================================================================
+
+Review Complete!
+
+How would you like to procede?
+
+1) Continue working in the $cur_branch branch.
+
+Any changes you make and commit to this branch may not be pushed until
+your review has been approved.
+
+Choose (1) this if you need to continue working on features that build upon
+the commits you've just submitted for review.
+
+2) Rewind $cur_branch back to remotes/main/$cur_branch
+
+This option saves your changes in the branch review-$review->{id} and resets
+your $cur_branch back to the remote version of that branch. Choose this option
+if you'd like to work on changes that do not depend on this review.
+
+END_OF_OPTIONS
+
+my $choice = undef;
+while ((not defined $choice) || ($choice !~ /^[12]$/)) {
+    local $| = 1;
+    print "How would you like to proceed? [2]:";
+
+    chomp($choice = <STDIN>);
+    $choice = 2 if ($choice eq '')
+}
+
+if ($choice == 1) {
+    exit(0);
+} else {
+    system("git-reset",
+           "--hard",
+           "remotes/origin/$cur_branch");
+}
+
+
+
+##
 # Print out a list of the revisions that will be in this review, and ask the user for
 # confirmation to make sure they're submitting what they think they are
 ##
