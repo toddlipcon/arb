@@ -1,15 +1,15 @@
 @comment = Comment.new(params[:comment])
 
-line_id = @comment.index_hash + '_line_' + @comment.line_number.to_s
-inserted_id = line_id + '_inserted';
-below_table_id = line_id + '_after';
+@line_id = @comment.index_hash + '_line_' + @comment.line_number.to_s
+@inserted_id = @line_id + '_inserted';
+below_table_id = @line_id + '_after';
 
-page.select('#' + line_id + ' .comment_link a').each do |elem|
+page.select('#' + @line_id + ' .comment_link a').each do |elem|
   elem.hide()
 end
 
-page.assign :line_id, line_id
-page.assign :inserted_id, inserted_id
+page.assign :line_id, @line_id
+page.assign :inserted_id, @inserted_id
 page.assign :below_table_id, below_table_id
 
 
@@ -48,5 +48,5 @@ while (elem != null) {
 }
 EOF
 
-page.replace_html inserted_id , :partial => 'new_comment_ajax_row'
-page.visual_effect :blind_down, inserted_id, :duration => 1
+page.replace_html @inserted_id , :partial => 'new_comment_ajax_row'
+page.visual_effect :blind_down, @inserted_id, :duration => 1
