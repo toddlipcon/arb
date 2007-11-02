@@ -50,7 +50,7 @@ class GitRepository
   
   def git_rev_parse(rev_id)
     rev = in_repository do
-      `git-rev-parse --verify #{rev_id} 2>/dev/null`.chomp
+      `git-rev-list --max-count=1 #{rev_id} 2>/dev/null`.chomp
     end
     return rev.empty? ? nil : rev
   end
