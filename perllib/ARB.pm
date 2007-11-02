@@ -8,7 +8,7 @@ use LWP::UserAgent;
 use Term::ReadKey;
 use Cwd;
 
-my $PROJECT_REGEX = qr#^/files/git/repos/[^/]+/(.+?)/?(?:\.git)?$#;
+my $PROJECT_REGEX = qr#^(?:ssh://(?:.+?@)?janus.*)?/files/git/repos/[^/]+/(.+?)/?(?:\.git)?$#;
 
 my $WEBAPP_BASEURL = 'http://janus.corp.amiestreet.com:3000/';
 
