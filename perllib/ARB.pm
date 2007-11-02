@@ -167,7 +167,7 @@ is not found.
 sub get_review {
     my ($id) = @_;
 
-    return get_json_request('/review/' . $id . '/json');
+    return get_json_request('/review/' . $id . '/show/json');
 #TODO(nyi) ARB::Review object
 }
 

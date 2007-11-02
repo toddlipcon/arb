@@ -79,6 +79,11 @@ class ArbCommit
     review_commit.exists_in_repository?
   end
 
+  def exists_in_main_repository?
+    puts "checking #{@sha1}"
+    main_commit.exists_in_repository?
+  end
+
   ##
   # Returns the applicable OWNERS files for all of the files
   # involved in this commit. The output is an array of hashes, where
@@ -239,6 +244,14 @@ class ArbCommit
                                      @sha1)
     end
     @review_commit
+  end
+
+  def main_commit
+    if @main_commit.nil?
+      @main_commit = GitCommit.new(project.main_repository,
+                                   @sha1)
+    end
+    @main_commit
   end
 
   def author

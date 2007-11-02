@@ -44,6 +44,10 @@ class Review < ActiveRecord::Base
     commits.all? { |c| c.approved? }
   end
 
+  def pushed?
+    commits.all? { |c| c.exists_in_main_repository? }
+  end
+
   def to_json
     {
       'developer' => developer,
@@ -51,7 +55,8 @@ class Review < ActiveRecord::Base
       'created_on' => created_on,
       'project' => project.name,
       'id' => id,
-      'is_approved' => approved?
+      'is_approved' => approved?,
+      'is_pushed'   => pushed?
     }.to_json
   end
 
