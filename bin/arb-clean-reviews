@@ -1,0 +1,106 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::RealBin/../perllib/";
+
+use Getopt::Long;
+use Pod::Usage;
+
+use ARB;
+
+my $DRY_RUN = 0;
+
+my $getopt = GetOptions(
+    "help" => sub { pod2usage(-verbose => 2); },
+    "dry-run|n" => \$DRY_RUN
+) or pod2usage(-verbose => 1);
+
+my @refs =
+    map { m#^refs/(.+)$# }
+    grep /review-\d+$/,
+    split /\n/, `git-show-ref | awk '{print \$2}'`;
+
+my @remote_refs = map { m#^remotes/(.+)$# } grep m#^remotes/#, @refs;
+my @local_refs = map { m#^heads/(.+)$# } grep m#^heads/#, @refs;
+
+
+##
+# Remove remote refs that don't have corresponding local refs
+##
+foreach my $ref (@remote_refs) {
+    if ((scalar grep /^$ref$/, @local_refs) == 0) {
+        print "Deleting remote ref $ref\n";
+        &do('git-branch',
+            '-r',
+            '-d',
+            $ref);
+    }
+}
+##
+# Remote any local refs for reviews that have been approved
+##
+foreach my $ref (@local_refs) {
+    print "Checking ref $ref\n";
+    next unless $ref =~ /^review-(\d+)$/;
+
+    my $id = $1;
+
+    my $review = ARB::get_review($id);
+    die "Couldnt get review $id" unless $review;
+
+    if ($review->{is_pushed}) {
+        print "Review is pushed. Deleting...";
+        &do("git-branch",
+            "-d",
+            $ref);
+        print "\n";
+    } else {
+        print "Review is not pushed. Keeping\n";
+    }
+}
+
+
+
+sub do {
+    my @args = @_;
+
+    if ($DRY_RUN) {
+        print join(" ", @args), "\n";
+    } else {
+        system(@args);
+    }
+}
+
+__END__
+
+=head1 NAME
+
+arb-clean-reviews - cleans up review branches in your repository
+
+=head1 SYNOPSIS
+
+B<arb-clean-reviews> [--dry-run]
+
+=head1 DESCRIPTION
+
+I<arb-clean-reviews> removes any review branches in your repository that have already
+made it into remotes/main/<cur_branch>.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-n, --dry-run>
+
+I<arb-clean-reviews> will not delete any branches. Instead, it will print out the commands
+it would have executed.
+
+=back
+
+=head1 AUTHOR
+
+Todd Lipcon E<lt>todd@amiestreet.comE<gt>
+
+=cut
