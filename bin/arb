@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+#
+# Wrapper for all arb commands
+
+use strict;
+use warnings;
+use FindBin;
+
+
+my $bin_root = $FindBin::RealBin;
+
+my $command = shift @ARGV;
+
+if (not defined $command) {
+    pod2usage(-verbose => 1);
+}
+
+if (! -e $bin_root . "/arb-" . $command) {
+    die "arb-$command not found in $bin_root";
+}
+
+system($bin_root . '/arb-' . $command,
+      @ARGV);

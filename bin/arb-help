@@ -1,0 +1,6 @@
+#!/bin/sh
+
+DIR=`dirname $0`
+CMD=$1
+
+$DIR/arb-$CMD --help
