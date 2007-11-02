@@ -38,8 +38,7 @@ my $review_branch = 'review-' . $review->{id};
 
 print "Creating review branch $review_branch...\n";
 
-system('git-checkout',
-       '-b',
+system('git-branch',
        $review_branch);
 
 print "\nPushing review branch to review repository";
