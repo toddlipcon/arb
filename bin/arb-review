@@ -20,13 +20,15 @@ my $getopt = GetOptions(
 
 
 my $branch_param = shift @ARGV;
-my $against_sha1 = determine_against_sha1($branch_param);
 
+system('git-fetch',
+       'main');
+
+my $against_sha1 = determine_against_sha1($branch_param);
 
 &confirm_review($against_sha1);
 
 print STDERR "Submitting review against $against_sha1...\n" if $VERBOSE;
-
 
 print "Creating review on review system...\n";
 
