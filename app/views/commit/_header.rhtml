@@ -29,4 +29,18 @@
     </td>
   </tr>
 
+  <tr>
+    <td class="header">Allowed approvers:</td>
+    <td>
+      <% commit.allowed_approvers.each do |approver| %>
+        <%=h approver %>
+      <% end %>
+      <br/>
+      <% unless commit.allowed_approvers.empty? %>
+        <a href="/project/<%=h commit.project.name %>/commit/sha1/<%= commit.sha1 %>/approve"/>
+          approve
+        </a>
+      <% end %>
+    </td>
+  </tr>
 </table>

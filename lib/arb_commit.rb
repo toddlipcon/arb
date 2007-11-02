@@ -170,6 +170,23 @@ class ArbCommit
   end
 
   ##
+  # The total list of people who show up in the OWNERS files for this commite
+  ##
+  def allowed_approvers
+    return @allowed_approvers unless @allowed_approvers.nil?
+
+    owners = owners_contents.flatten.uniq
+
+    if self.author =~ /<(.+?)@amiestreet.com>/
+      author_username = $1
+      owners.reject! { |u| u == author_username }
+    end
+    @allowed_approvers = owners
+
+    @allowed_approvers
+  end
+
+  ##
   # Suggests sets of reviewers who could approve this review and satisfy
   # all OWNERS constraints
   ##

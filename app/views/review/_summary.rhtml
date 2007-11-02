@@ -9,7 +9,14 @@
         <tt><%=h commit.sha1.slice(0,10) %> <%=h commit.log_message.split("\n").first %></tt>
         [<a href="#commit_<%= commit.sha1 %>">go</a>]
       </li>
+      <span class="header">Allowed approvers:</span>
+      <% commit.allowed_approvers.each do |approver| %>
+        <%=h approver %>
+      <% end %>
     <% end %>
   </ul>
+  
+
+
 </td></tr>
 </table>
