@@ -79,7 +79,7 @@ if (scalar @owners != 0) {
     }
     chomp(my $reviewers_str = <STDIN>);
 
-    $reviewers_str |= $default_reviewers;
+    $reviewers_str ||= $default_reviewers;
 
     my @reviewers = split /,/, $reviewers_str;
 
