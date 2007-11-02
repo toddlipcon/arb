@@ -41,7 +41,7 @@ print "Creating review branch $review_branch...\n";
 system('git-branch',
        $review_branch);
 
-print "\nPushing review branch to review repository";
+print "\nPushing review branch to review repository...\n";
 
 system("git-push",
        ARB::get_review_repository(),
@@ -60,26 +60,31 @@ print "Owners to approve: \n";
 
 my @owners = ARB::get_suggested_reviewers($review->{id});
 
-print join("\n",
-           map { "\t" . join(",", @{$_}) } @owners);
 
-print "\n\n";
+if (scalar @owners != 0) {
+    print join("\n",
+               map { "\t" . join(",", @{$_}) } @owners);
 
-print "(any of the above sets would be able to approve this review)\n\n";
+    print "\n\n";
 
-my $default_reviewers = join(",", @{$owners[0]});
+    print "(any of the above sets would be able to approve this review)\n\n";
 
-{
-    $| = 1;
-    print "Who would you like to notify to review this: [$default_reviewers]:";
+    my $default_reviewers = join(",", @{$owners[0]});
+
+    {
+        $| = 1;
+        print "Who would you like to notify to review this: [$default_reviewers]:";
+    }
+    chomp(my $reviewers_str = <STDIN>);
+
+    $reviewers_str |= $default_reviewers;
+
+    my @reviewers = split /,/, $reviewers_str;
+
+    ARB::notify_reviewers($review->{id}, @reviewers);
+} else {
+    print "No owners apply to this commit. It does not need to be approved!\n";
 }
-chomp(my $reviewers_str = <STDIN>);
-
-$reviewers_str |= $default_reviewers;
-
-my @reviewers = split /,/, $reviewers_str;
-
-ARB::notify_reviewers($review->{id}, @reviewers);
 
 ##
 # Print out a list of the revisions that will be in this review, and ask the user for
