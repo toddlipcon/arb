@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Install arb into ~/bin
+
+DSTDIR=$HOME
+DST_ARBDIR=$DSTDIR/arb
+DST_BINDIR=$DSTDIR/bin
+
+echo Installing into $DSTDIR
+echo Is that okay? [y/n]
+
+read CONF
+
+if [ "$CONF" != "y" ]; then
+  exit 0;
+fi
+
+
+if [ ! -e $DSTDIR/arb ]; then
+  git clone ssh://janus.corp.amiestreet.com/files/git/repos/main/arb/ $DST_ARBDIR
+else
+  cd $DST_ARBDIR && git pull
+fi
+
+mkdir -p $DST_BINDIR
+
+for x in `cd $DST_ARBDIR/bin/ && ls -1 arb-*` ; do
+  echo Installing $x...
+  ln -sf $DST_ARBDIR/bin/$x $DST_BINDIR/$x
+done
+
+echo Done installing. You may need to run $DST_BINDIR/arb-install-deps as root
+echo to install required packages.
+echo
+echo You may also need to make sure $HOME/bin is in your path, and possibly run
+echo hash -r in order to reload the items in your path
