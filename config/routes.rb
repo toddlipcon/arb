@@ -39,6 +39,11 @@ ActionController::Routing::Routes.draw do |map|
     :json => /(?:json)?/,
     :defaults => { :json => 0 }
 
+  map.new 'review/:id/show/json',
+    :controller => 'review',
+    :action => 'show',
+    :json => 1
+
   map.notify 'review/:id/notify/:reviewer',
     :controller => 'review',
     :action => 'notify',

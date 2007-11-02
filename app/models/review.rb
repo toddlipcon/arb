@@ -44,4 +44,15 @@ class Review < ActiveRecord::Base
     commits.all? { |c| c.approved? }
   end
 
+  def to_json
+    {
+      'developer' => developer,
+      'against_sha1' => against_sha1,
+      'created_on' => created_on,
+      'project' => project.name,
+      'id' => id,
+      'is_approved' => approved?
+    }.to_json
+  end
+
 end

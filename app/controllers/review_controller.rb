@@ -38,6 +38,10 @@ class ReviewController < ApplicationController
 
   def show
     get_review
+
+    if params[:json]
+      render :json => @review
+    end
   end
 
   def minimal_owners_to_approve
