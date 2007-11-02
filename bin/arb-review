@@ -106,7 +106,7 @@ Review Complete!
 
 How would you like to proceed?
 
-1) Continue working in the $cur_branch branch.
+1) Continue working in the local $cur_branch branch, including these changes.
 
 Any changes you make and commit to this branch may not be pushed until
 your review has been approved.
