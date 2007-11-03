@@ -5,17 +5,19 @@ class Review < ActiveRecord::Base
 
   validates_length_of :against_sha1, :is => 40
 
-  def branch
-    branch = self.project.review_repository.branch('review-' + self.id.to_s)
-    if branch.nil? || !branch.exists_in_repository?
-      raise "No such branch in review repository"
-    end
+  def exists_in_review_repository?
+    branch.exists_in_repository?
+  end
 
-    branch
+  def branch
+    self.project.review_repository.branch('review-' + self.id.to_s)
   end
 
   def commits
     branch = self.branch
+    if !branch.exists_in_repository?
+      raise "Cant get commit list for branch that does not exist in review repo"
+    end
 
     project.review_repository.git_fetch_from('main')
     branch.rev_list_from(self.against_sha1).map do |sha1|
@@ -49,15 +51,22 @@ class Review < ActiveRecord::Base
   end
 
   def to_json
+    h = 
     {
       'developer' => developer,
       'against_sha1' => against_sha1,
       'created_on' => created_on,
       'project' => project.name,
-      'id' => id,
-      'is_approved' => approved?,
-      'is_pushed'   => pushed?
-    }.to_json
+      'id' => id
+    }
+
+    if exists_in_review_repository?
+      h.merge!({
+                 'is_approved' => approved?,
+                 'is_pushed'   => pushed?
+               })
+    end
+    h.to_json
   end
 
 end
