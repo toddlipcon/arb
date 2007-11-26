@@ -12,17 +12,6 @@
      %>
 
     <tr class="diff_line" id="<%= line_id %>">
-    <% # Line numbers %>
-      <% line.line_numbers.each do |n| %>
-        <td class="line_number"><%=h n.nil? ? "-" : n %></td>
-      <% end %>
-      <td class="<%= (line_classes line).join(" ") %>">
-        <% if line.line.empty? %>
-          &nbsp;
-        <% else %>
-          <code><%=h line.line %></code><br/>
-        <% end %>
-      </td>
       <% if ! @review.nil? %>
         <td class="comment_link">
           <%= link_to_remote '+', :url => {
@@ -34,6 +23,17 @@
            } %>
         </td>
       <% end %>
+    <% # Line numbers %>
+      <% line.line_numbers.each do |n| %>
+        <td class="line_number"><%=h n.nil? ? "-" : n %></td>
+      <% end %>
+      <td class="<%= (line_classes line).join(" ") %>">
+        <% if line.line.empty? %>
+          &nbsp;
+        <% else %>
+          <code><%=h line.line.sub(/\r$/,'') %></code><br/>
+        <% end %>
+      </td>
     </tr>
   <% comments = comments_for_line(blob, blob_line_number) %>
   <% comments.each do |comment| %>
