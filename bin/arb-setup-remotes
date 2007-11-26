@@ -45,10 +45,18 @@ if ($cur_origin ne $want_origin) {
     if ($choice == 1) { # change "origin branch"
         system("git config remote.origin.url '$want_origin'");
         print "Set origin url to $want_origin\n";
+        chomp($cur_origin = `git-config remote.origin.url`);
+
+        die "Set unsuccessful" if $cur_origin ne $want_origin;
+
     } else {
         system("git remote add main '$want_origin'");
     }
-} else {
+}
+
+# Don't use "else" for the below since they could have made this condition
+# come true in the block above
+if ($cur_origin eq $want_origin) {
     # Check if they have a redundant old-style "main" remote to remove
     chomp(my $cur_main = `git-config remote.main.url`);
     if ($? == 0) { # config key found
