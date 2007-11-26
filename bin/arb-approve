@@ -9,6 +9,7 @@ use Pod::Usage;
 use Getopt::Long;
 
 use ARB;
+use Data::Dumper;
 
 my $getopt = GetOptions(
     "help" => sub { pod2usage(-verbose => 2); }
