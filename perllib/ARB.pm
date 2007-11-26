@@ -302,6 +302,9 @@ sub _decode_response {
         "\n\nResponse\n\n" . $response->content
         unless $response->is_success;
 
+    die "Looks like a server error: " . $response->content
+        if $response->content =~ /500 Internal Server Error/;
+
     my $json = new JSON(unmapping => 1);
     return $json->jsonToObj($response->content);
 }
