@@ -21,8 +21,10 @@ my $getopt = GetOptions(
 
 my $branch_param = shift @ARGV;
 
+my $main_remote = get_main_remote();
+
 system('git-fetch',
-       'main');
+       $main_remote);
 
 my $against_sha1 = determine_against_sha1($branch_param);
 
@@ -114,7 +116,7 @@ your review has been approved.
 Choose (1) this if you need to continue working on features that build upon
 the commits you've just submitted for review.
 
-2) Rewind $cur_branch back to remotes/main/$cur_branch
+2) Rewind $cur_branch back to remotes/$main_remote/$cur_branch
 
 This option saves your changes in the branch review-$review->{id} and resets
 your $cur_branch back to the remote version of that branch. Choose this option
@@ -195,16 +197,16 @@ sub determine_against_sha1 {
 
             print STDERR "No branch passed. Currently on $cur_branch...\n" if $VERBOSE;
 
-            # Check if remotes/main/<branch> exists
+            # Check if remotes/[main|origin]/<branch> exists
 
-            chomp(my $remote_sha1 = `git-rev-parse --verify remotes/main/$cur_branch 2>/dev/null`);
+            chomp(my $remote_sha1 = `git-rev-parse --verify remotes/$main_remote/$cur_branch 2>/dev/null`);
             if ($? == 0) {
                 # It exists
-                print STDERR "remotes/main/$cur_branch exists -- submitting against that.\n"
+                print STDERR "remotes/$main_remote/$cur_branch exists -- submitting against that.\n"
                     if $VERBOSE;
                 return $remote_sha1;
             } else {
-                print STDERR "remotes/main/$cur_branch doesn't exist. defaulting to master.\n";
+                print STDERR "remotes/$main_remote/$cur_branch doesn't exist. defaulting to master.\n";
             }
         } else {                # no current branch
             print STDERR "Not currently on a branch\n" if $VERBOSE;
@@ -213,7 +215,7 @@ sub determine_against_sha1 {
 
 # Haven't been able to derive a branch
     if (! $against_sha1) {
-        my $against_branch = $branch_param || 'remotes/main/master';
+        my $against_branch = $branch_param || 'remotes/$main_remote/master';
         
         chomp(my $parsed = `git-rev-parse --verify $against_branch 2>/dev/null`);
 
@@ -224,6 +226,20 @@ sub determine_against_sha1 {
         return $parsed;
     }
 
+}
+
+##
+# Determines the remote for the "main" repository.
+# Simply, this is "main" if it exists -- otherwise it's "origin"
+##
+sub get_main_remote {
+    my $remotes_str = `git-remote`;
+    chomp(my @remotes = split(/\n/, $remotes_str));
+    if (grep { $_ eq 'main' } @remotes) {
+        return 'main';
+    } else {
+        return 'origin';
+    }
 }
 
 __END__
@@ -254,21 +270,25 @@ for example a branch name or a possibly abbreviated commit hash.
 
 =item 2.
 
-The set of commits in your current git HEAD that are not in remotes/main/I<branch>
+The set of commits in your current git HEAD that are not in remotes/origin/I<branch>
 where I<branch> is the name of your current branch. For example, if you are currently
-working in the C<signup> branch, and the branch C<remotes/main/signup> exists, the
+working in the C<signup> branch, and the branch C<remotes/origin/signup> exists, the
 review will contain all changes in your HEAD (local C<signup> branch) that are not
-in C<remotes/main/signup>
+in C<remotes/origin/signup>
 
 =item 3.
 
-The set of commits in your current git HEAD that are not in remotes/main/master.
+The set of commits in your current git HEAD that are not in remotes/origin/master.
 
 =back
 
 The three alternatives listed above are tried in the order listed, and the first
 applicable set is chosen.
 
+=head1 NOTES
+
+Wherever C<remotes/origin> is listed above, the remote named C<remotes/main> will
+be substituted if it exists. If you're unsure of this feature, don't worry about it.
 
 =head1 AUTHOR
 

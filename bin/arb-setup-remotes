@@ -19,8 +19,56 @@ my $project = ARB::deduce_project();
 die "Cannot deduce project" unless $project;
 
 system("git remote add review " . ARB::get_review_repository());
-system("git remote add main " . ARB::get_main_repository());
 
+chomp(my $cur_origin = `git-config remote.origin.url`);
+my $want_origin = ARB::get_main_repository();
+
+if ($cur_origin ne $want_origin) {
+
+    print "Your 'origin' remote is currently set to:\n  $cur_origin\n";
+    print "ARB expects it to be:\n  $want_origin\n";
+    print "\n";
+    print "Would you like to:\n";
+    print "\t(1) Set 'origin' to $want_origin\n";
+    print "\t(2) Make a new 'main' remote for ARB to use instead\n";
+    print "\n";
+
+    my $choice = undef;
+    while ((not defined $choice) || ($choice !~ /^[12]$/)) {
+        local $| = 1;
+        print "How would you like to proceed? [1]:";
+
+        chomp($choice = <STDIN>);
+        $choice = 1 if ($choice eq '')
+    }
+
+    if ($choice == 1) { # change "origin branch"
+        system("git config remote.origin.url '$want_origin'");
+        print "Set origin url to $want_origin\n";
+    } else {
+        system("git remote add main '$want_origin'");
+    }
+} else {
+    # Check if they have a redundant old-style "main" remote to remove
+    chomp(my $cur_main = `git-config remote.main.url`);
+    if ($? == 0) { # config key found
+
+        print "You seem to have a redundant 'main' remote with url:\n  $cur_main\n";
+        my $choice = undef;
+        while ((not defined $choice) || ($choice !~ /^[yn]$/i)) {
+            local $| = 1;
+            print "Would you like to remove it? (Y/n):";
+
+            chomp($choice = <STDIN>);
+            $choice = 'Y' if ($choice eq '')
+        }
+        if (uc $choice eq 'Y') {
+            print "Removing remote 'main'\n";
+            system("git-config --remove-section remote.main");
+        }
+
+    }
+}
 print "Remotes set up\n";
 
 __END__
