@@ -35,6 +35,11 @@ class Review < ActiveRecord::Base
     project.review_repository.git_log(against_sha1, "review-#{id}")
   end
 
+  def diff
+    diff = project.review_repository.git_diff_tree(against_sha1, "review-#{id}")
+    GitDiffParser.new.parse(diff)
+  end
+
   def count_commits
     if @count_commits.nil?
       @count_commits = branch.rev_list_from(self.against_sha1).length

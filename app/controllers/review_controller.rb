@@ -44,6 +44,10 @@ class ReviewController < ApplicationController
     end
   end
 
+  def bigdiff
+    get_review
+  end
+
   def minimal_owners_to_approve
     get_review
     render :json => @review.minimal_owners_to_approve

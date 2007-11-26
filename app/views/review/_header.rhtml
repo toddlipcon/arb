@@ -1,0 +1,24 @@
+<% review = header %>
+
+<table class="review_header">
+  <tr>
+    <td class="header">Source repository</td>
+    <td><%=h review.repository %></td>
+  </tr>
+  <tr>
+    <td class="header">
+      Submitted for review by
+    </td>
+    <td>
+      <%=h review.developer %>
+    </td>
+  </tr>
+  <tr>
+    <td class="header">
+      Submitted on
+    </td>
+    <td>
+      <%=h review.created_on %>
+    </td>
+  </tr>
+</table>

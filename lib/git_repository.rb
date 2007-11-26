@@ -10,9 +10,13 @@ class GitRepository
     Dir.chdir(@repository_dir) { yield }
   end
 
-  def git_diff_tree(sha1)
+  def git_diff_tree(from, to=nil)
     in_repository do
-      return `git-diff-tree --no-commit-id -C --cc #{sha1}`
+      if to.nil?
+        return `git-diff-tree --no-commit-id -C --cc #{from}`
+      else
+        return `git-diff-tree --no-commit-id -C --cc #{from}..#{to}`
+      end
     end
   end
 

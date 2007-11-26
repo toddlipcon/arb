@@ -1,0 +1,7 @@
+<%= render_partial 'review/header', @review %>
+
+<%= render_partial 'review/summary', @review %>
+
+<% @review.diff.file_change_sets.each do |fcs| %>
+  <%= render_partial 'commit/file_change_set', fcs %>
+<% end %>
