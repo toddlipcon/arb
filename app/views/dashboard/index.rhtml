@@ -1,0 +1,32 @@
+
+<div class="pending_reviews">
+
+  <h3>Pending reviews you've submitted</h3>
+  <ul>
+  <% @pending_reviews.each do |review| %>
+    <li>
+      Review ID
+      <%= link_to '#' + review.id.to_s, {
+        :controller => 'review',
+        :action => 'show',
+        :id => review.id } %>
+      <%=h review.created_on %>
+      <%= review.approved? ? 'approved' : 'not approved' %>
+
+      <table class="review_summary">
+        <tr><td>
+
+        <ul>
+        <% review.commits.each do |commit| %>
+          <li class="<%= commit.approved? ? "approved":"unapproved" %>">
+            <tt><%=h commit.sha1.slice(0,10) %> <%=h commit.log_message.split("\n").first %></tt>
+          </li>
+        <% end %>
+        </ul>
+
+        </td></tr>
+      </table>
+    </li>
+  <% end %>
+
+</table>
