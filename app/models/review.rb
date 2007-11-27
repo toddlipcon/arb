@@ -16,10 +16,11 @@ class Review < ActiveRecord::Base
   def commits
     branch = self.branch
     if !branch.exists_in_repository?
-      raise "Cant get commit list for branch that does not exist in review repo"
+      return []
     end
 
     project.review_repository.git_fetch_from('main')
+
     branch.rev_list_from(self.against_sha1).map do |sha1|
       ArbCommit.new(project, sha1)
     end

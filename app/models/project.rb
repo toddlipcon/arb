@@ -4,11 +4,11 @@ class Project < ActiveRecord::Base
   end
 
   def review_repository
-    GitRepository.new(self[:review_repository])
+    GitRepository.get(self[:review_repository])
   end
 
   def main_repository
-    GitRepository.new(self[:main_repository])
+    GitRepository.get(self[:main_repository])
   end
 
 end

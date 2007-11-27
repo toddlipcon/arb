@@ -14,13 +14,14 @@
     <tr class="diff_line" id="<%= line_id %>">
       <% if ! @review.nil? %>
         <td class="comment_link">
-          <%= link_to_remote '+', :url => {
+          <a href="#" onclick="new Ajax.Request('/review/<%= @review.id %>/new_comment_ajax?comment%5Bindex_hash%5D=<%= blob %>&amp;comment%5Bline_number%5D=<%= blob_line_number %>&amp;comment%5Breview_id%5D=<%= @review.id %>', {asynchronous:true, evalScripts:true}); return false;">+</a>
+          <%= true ? '' : link_to_remote('+', :url => {
                 :controller => 'review',
                 :action => 'new_comment_ajax',
                 'comment[review_id]'   => @review.id,
                 'comment[index_hash]'  => blob,
                 'comment[line_number]' => blob_line_number
-           } %>
+              }) %>
         </td>
       <% end %>
     <% # Line numbers %>

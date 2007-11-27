@@ -42,6 +42,12 @@ class ArbCommit
   # Returns nil if there is no applicable OWNERS file.
   ##
   def find_owners_file(dir)
+    CACHE.cache_block('arb_commit/' + self.sha1 + '/' + 'find_owners_files/' + dir, 0) do
+      real_find_owners_file(dir)
+    end
+  end
+
+  def real_find_owners_file(dir)
     project.main_repository.in_repository do
       possible = possible_owners_files(dir)
       safer_args = possible.map { |f| "'" + f + "'" }
@@ -90,14 +96,16 @@ class ArbCommit
   # each hash has the form as returned by find_owners_file() above
   ##
   def applicable_owners_files
-    raise "not in review repository" unless exists_in_review_repository?
+    CACHE.cache_block('arb_commit/' + self.sha1 + '/' + 'applicable_owners_files', 0) do
+      raise "not in review repository" unless exists_in_review_repository?
 
-    affected_dirs = changed_files.map { |f| File.dirname(f) }.uniq
-    
-    owners_files = affected_dirs.
-      map { |d| find_owners_file(d) }.
-      reject { |d| d.nil? }.
-      uniq
+      affected_dirs = changed_files.map { |f| File.dirname(f) }.uniq
+      
+      owners_files = affected_dirs.
+        map { |d| find_owners_file(d) }.
+        reject { |d| d.nil? }.
+        uniq
+    end
   end
 
   ##
@@ -108,6 +116,7 @@ class ArbCommit
   # that are governed by that OWNERS file
   ##
   def applicable_owners_files_hash
+    return @applicable_owners_files_hash if !@applicable_owners_files_hash.nil?
 
     # Make hash of (directory => [files in that directory in this commit]) pairs
 
@@ -122,7 +131,7 @@ class ArbCommit
     affected_dirs = affected_dirs_hash.keys
 
     # Make hash of owners file => [file1, file2, file3]
-    affected_dirs.inject(Hash.new) do |hash, dir|
+    res = affected_dirs.inject(Hash.new) do |hash, dir|
       owner = find_owners_file(dir)
 
       # If there's no OWNERS file for this dir, just skip it
@@ -147,6 +156,8 @@ class ArbCommit
       end
       hash
     end    
+
+    @applicable_owners_files_hash = res
   end
 
   def read_owners_file(blob)

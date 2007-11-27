@@ -58,3 +58,9 @@ ActiveRecord::Base.verification_timeout = 14400
 # end
 
 # Include your application configuration below
+
+# Memcache
+require 'memcache'
+require 'memcache_block.rb'
+CACHE = MemCache.new({ :namespace => 'arb' })
+CACHE.servers = 'localhost:11211'

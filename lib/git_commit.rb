@@ -8,7 +8,8 @@ class GitCommit
   end
 
   def git_show
-    return repository.git_show(self.sha1)
+    @git_show = repository.git_show(self.sha1) if @git_show.nil?
+    @git_show
   end
 
   def full_revision
@@ -38,8 +39,11 @@ class GitCommit
   end
 
   def changed_files
-    stat = repository.git_diff_status_from_parent(self.sha1)
-    return stat.map { |change| change[:file] }
+    return @changed_files if !@changed_files.nil?
+    @changed_files = CACHE.cache_block('git_commit/' + self.sha1 + "/changed_files", 0) do
+      stat = repository.git_diff_status_from_parent(self.sha1)
+      stat.map { |change| change[:file] }
+    end
   end
 
   def diff
