@@ -215,7 +215,7 @@ sub determine_against_sha1 {
 
 # Haven't been able to derive a branch
     if (! $against_sha1) {
-        my $against_branch = $branch_param || 'remotes/$main_remote/master';
+        my $against_branch = $branch_param || "remotes/$main_remote/master";
         
         chomp(my $parsed = `git-rev-parse --verify $against_branch 2>/dev/null`);
 
