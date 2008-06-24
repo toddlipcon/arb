@@ -12,7 +12,7 @@
     </tr>
     <tr>
       <td class="content" colspan="2">
-        <%=h comment.content %>
+        <%=(h comment.content).gsub("\n", "<br/>") %></pre>
       </td>
     </tr>
   </table>
