@@ -1,0 +1,56 @@
+This is an (incomplete) page from our internal wiki that may be somewhat useful:
+
+
+
+= Using ARB =
+
+
+== Introduction ==
+
+ARB (Amie Review Board?) is our internal code review system. This document serves as a brief introduction to its functionality
+
+=== Features/Operation ===
+
+==== Code Review Policies ====
+
+In order to reduce bugs in our code, we ensure that all code is looked at by at least two people. For each commit in {{{git}}}, a set of applicable developers is generated, and at least one of those developers must approve the commit before it can be pushed into the {{{main}}} repository.
+
+==== .OWNERS Files ====
+
+Each directory in a git repository may have a file called {{{.OWNERS}}} in it. These files determine the developers who may approve commits touching files inside that directory. For any section of code, at least two developers should be listed, since a commit may never be approved by its author. If a directory does not have a {{{.OWNERS}}} file, ARB will traverse the tree upwards until it finds one. For example, in {{{web/code/application/modules/facebook/}}} there is a file {{{.OWNERS}}} which contains:
+
+{{{
+jason
+todd
+}}}
+
+Therefore, if someone commits a chunk of code which modifies {{{web/code/application/modules/facebook/controllers/CanvasController.php}}} then either {{{jason}}} or {{{todd}}} must approve that commit before it may be pushed to {{{main}}}. If the author of the commit is {{{jason}}}, then {{{todd}}} must approve it since {{{jason}}} may not approve his own commit.
+
+== Installing ARB on a VM ==
+
+ * As amiest:
+{{{
+cd ~
+test ! -d arb && git clone ssh://janus.corp.amiestreet.com/files/git/repos/main/arb/
+(cd arb && git-pull)
+./arb/bin/arb-install
+# Enter "y" when it asks "Is that okay?"
+}}}
+
+ * Edit {{{~/.profile}}} and add the line {{{export ARB_USER=jonah}}} or whoever you are.
+ * Log out and back in, or do {{{source ~/.profile}}} to load that variable.
+ * Run {{{hash -r}}} to load the new arb binaries into your path 
+
+ * {{{su}}} to root and then:
+{{{
+/home/amiest/arb/bin/arb-install-deps
+}}}
+
+
+== Submitting code for review ==
+
+Use ~/arb/bin/arb-review [AGAINST]
+
+== Performing a Review ==
+
+== Pushing reviewed code ==
